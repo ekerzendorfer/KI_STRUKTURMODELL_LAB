@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.3.1
+/* KI-Strukturmodell-Labor v0.3.3
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.3.1: bereitet lokale PDB-Dateien für Standardvergleiche und externe ColabFold-Erzeugung vor. */
+   v0.3.3: lädt lokale PDB-Dateien mit Cache-Busting und besserer Diagnose. */
 
-const APP_VERSION = "0.3.1";
+const APP_VERSION = "0.3.3";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -421,13 +421,31 @@ async function loadStructureText(struct) {
   return await fetchTextWithFallback([struct.url, struct.fallbackUrl].filter(Boolean));
 }
 
+function withCacheBuster(url) {
+  if (!url) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}v=${encodeURIComponent(APP_VERSION)}&t=${Date.now()}`;
+}
+
+function looksLikePdb(text) {
+  if (!text) return false;
+  return /(^|
+)(ATOM  |HETATM|MODEL |HEADER|TITLE )/.test(text);
+}
+
 async function fetchTextWithFallback(urls) {
   let lastErr = null;
-  for (const url of urls) {
+  for (const originalUrl of urls) {
+    if (!originalUrl) continue;
+    const url = withCacheBuster(originalUrl);
     try {
-      const res = await fetch(url, { cache: "force-cache" });
-      if (!res.ok) throw new Error(`${url} (${res.status})`);
-      return await res.text();
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`${originalUrl} (${res.status})`);
+      const text = await res.text();
+      if (!looksLikePdb(text)) {
+        throw new Error(`${originalUrl} wurde geladen, enthält aber keine erkennbaren PDB-Zeilen (ATOM/HETATM/MODEL).`);
+      }
+      return text;
     } catch (err) {
       lastErr = err;
     }

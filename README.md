@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.3.1
+# KI-Strukturmodell-Labor v0.3.3
 
 Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
@@ -9,8 +9,10 @@ Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstruk
 Die Website bleibt die stabile Vergleichsumgebung.  
 ColabFold wird bewusst als externer Vertiefungsweg genutzt.
 
-## Neu in v0.3.1
+## Neu in v0.3.3
 
+- lokale PDB-Dateien werden mit Cache-Busting geladen, damit nachträglich hochgeladene Strukturen nicht durch alte 404-Caches blockiert werden
+- bessere Diagnose, falls eine Datei zwar geladen wird, aber keine erkennbaren PDB-Zeilen enthält
 - lokale Strukturpfade für den Standardmodus vorbereitet
 - experimentelle Strukturen können lokal liegen und fallen sonst auf RCSB zurück
 - KI-Modelle werden als lokale, kuratierte ColabFold-PDB-Dateien erwartet
@@ -55,3 +57,22 @@ colab/
 ```
 
 Danach GitHub Pages auf `main` und `/root` stellen.
+
+
+## Test für lokale PDB-Dateien
+
+Nach dem Hochladen einer Datei wie
+
+```text
+structures/ubiquitin/af2_colabfold.pdb
+```
+
+sollte die Datei direkt unter dieser GitHub-Pages-Adresse erreichbar sein:
+
+```text
+https://ekerzendorfer.github.io/KI_STRUKTURMODELL_LAB/structures/ubiquitin/af2_colabfold.pdb
+```
+
+Die ersten sichtbaren Zeilen sollten typische PDB-Zeilen enthalten, z. B. `MODEL`, `ATOM`, `HETATM`, `TER` oder `END`.
+
+Wenn die Datei im GitHub-Repo sichtbar ist, aber über GitHub Pages noch nicht erreichbar ist, hilft meist ein kurzer Moment Warten, bis Pages neu deployed ist. Danach im Browser Strg+F5 ausführen.
