@@ -1,9 +1,9 @@
-/* KI-Strukturmodell-Labor v0.2.2
+/* KI-Strukturmodell-Labor v0.2.3
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2.2: zusätzlicher Viewer-Hintergrund hellgrau/dunkel und einfache
-   Darstellungsoptionen: Cartoon, Cartoon+Stäbchen, Stäbchen, Linien, Sphären. */
+   v0.2.3: saubere Protein-Darstellungen; Kristallwasser wird entfernt,
+   reine Bänder bleiben wirklich reine Bänder, Ionen/Liganden optional. */
 
-const APP_VERSION = "0.2.2";
+const APP_VERSION = "0.2.3";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -29,6 +29,7 @@ const els = {
   showPrediction: document.getElementById("showPrediction"),
   showExperiment: document.getElementById("showExperiment"),
   showDifferenceResidues: document.getElementById("showDifferenceResidues"),
+  showHetero: document.getElementById("showHetero"),
   viewerBackground: document.getElementById("viewerBackground"),
   representationMode: document.getElementById("representationMode"),
   pdbUpload: document.getElementById("pdbUpload"),
@@ -60,7 +61,7 @@ function wireEvents() {
       loadCurrentExample();
     });
   });
-  [els.showPrediction, els.showExperiment, els.showDifferenceResidues].forEach(el => {
+  [els.showPrediction, els.showExperiment, els.showDifferenceResidues, els.showHetero].filter(Boolean).forEach(el => {
     el.addEventListener("change", () => loadCurrentExample());
   });
   els.viewerBackground.addEventListener("change", () => {
@@ -421,7 +422,22 @@ function preprocessPdb(pdb, struct) {
   if (struct.residueRange) {
     lines = filterResidueRange(lines, struct.residueRange[0], struct.residueRange[1]);
   }
+
+  // Kristallwasser stört in diesem didaktischen Viewer meist mehr, als es hilft.
+  // Es erscheint sonst als viele einzelne Kugeln im Bändermodell.
+  if (struct.stripWater !== false) {
+    lines = filterWater(lines);
+  }
   return lines.join("\n") + "\n";
+}
+
+function filterWater(lines) {
+  const waterNames = new Set(["HOH", "WAT", "H2O", "DOD", "SOL"]);
+  return lines.filter(line => {
+    if (!line.startsWith("HETATM")) return true;
+    const resn = line.slice(17, 20).trim().toUpperCase();
+    return !waterNames.has(resn);
+  });
 }
 
 function extractModel(lines, modelNumber) {
@@ -465,12 +481,19 @@ function isAtomLine(line) { return line.startsWith("ATOM") || line.startsWith("H
 
 function applyModelStyle(model, struct, role) {
   const color = struct.color || (role === "experiment" ? "#2E7D32" : "#EF6C00");
-  const opacity = role === "experiment" ? 0.78 : 0.88;
-  model.setStyle({}, buildRepresentationStyle(color, opacity));
+  const opacity = role === "experiment" ? 0.82 : 0.9;
 
-  // Heteroatome, Liganden und Ionen bleiben bei Cartoon-Ansichten als Stäbchen/Sphären sichtbar.
-  if (representationMode === "cartoon" || representationMode === "cartoon_stick") {
-    model.setStyle({ hetflag: true }, { stick: { color, radius: 0.18 }, sphere: { color, scale: 0.32 } });
+  // Standardmäßig wird nur das Protein selbst dargestellt. HETATM-Datensätze
+  // enthalten in Kristallstrukturen oft viele Wassermoleküle; diese würden im
+  // Bändermodell als verstreute Kugeln erscheinen und didaktisch verwirren.
+  if (representationMode === "backbone_stick") {
+    model.setStyle({ hetflag: false, atom: ["N", "CA", "C", "O"] }, buildRepresentationStyle(color, opacity));
+  } else {
+    model.setStyle({ hetflag: false }, buildRepresentationStyle(color, opacity));
+  }
+
+  if (els.showHetero?.checked) {
+    model.setStyle({ hetflag: true }, buildHeteroStyle(color));
   }
 }
 
@@ -479,26 +502,33 @@ function buildRepresentationStyle(color, opacity) {
     case "cartoon_stick":
       return {
         cartoon: { color, opacity },
-        stick: { color, radius: 0.12, opacity: Math.min(1, opacity + 0.1) }
+        stick: { color, radius: 0.10, opacity: Math.min(1, opacity + 0.08) }
       };
-    case "stick":
+    case "backbone_stick":
       return { stick: { color, radius: 0.16, opacity } };
+    case "stick":
+      return { stick: { color, radius: 0.14, opacity } };
     case "line":
       return { line: { color, opacity } };
     case "sphere":
-      return { sphere: { color, scale: 0.28, opacity } };
+      return { sphere: { color, scale: 0.25, opacity } };
     case "cartoon":
     default:
       return { cartoon: { color, opacity } };
   }
 }
 
+function buildHeteroStyle(color) {
+  return {
+    stick: { color, radius: 0.18, opacity: 0.9 },
+    sphere: { color, scale: 0.35, opacity: 0.9 }
+  };
+}
+
 function highlightDifferences() {
   if (!lastDiffResidues.length || !loadedModels.prediction) return;
-  loadedModels.prediction.model.setStyle({ resi: lastDiffResidues }, {
-    cartoon: { color: "#D32F2F", opacity: 1.0 },
-    stick: { color: "#D32F2F", radius: 0.18 }
-  });
+  const style = buildRepresentationStyle("#D32F2F", 1.0);
+  loadedModels.prediction.model.setStyle({ hetflag: false, resi: lastDiffResidues }, style);
 }
 
 function handleUpload(event) {
