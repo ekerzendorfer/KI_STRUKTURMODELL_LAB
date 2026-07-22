@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.2.5</title>
-  <link rel="stylesheet" href="style.css?v=0.2.5" />
+  <title>KI-Strukturmodell-Labor v0.3.0</title>
+  <link rel="stylesheet" href="style.css?v=0.3.0" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
 </head>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.2.5 · Atomfarben für Detaildarstellungen</p>
+      <p class="version">Version 0.3.0 · Beobachtung & Protokoll</p>
     </div>
   </header>
 
@@ -96,14 +96,30 @@
       </ol>
       <div id="takeaway" class="takeaway"></div>
     </section>
+
+    <section class="panel protocol-panel">
+      <h2>5. Beobachtung & Protokoll</h2>
+      <p class="soft-note">
+        Der Protokolltext ist keine automatische Auswertung. Er ist eine kopierbare Strukturhilfe für Heft, Lernplattform oder Unterrichtsgespräch.
+      </p>
+      <h3>Beobachtungsauftrag</h3>
+      <ul id="observationPrompts" class="observation-list"></ul>
+      <h3>Modellgrenze</h3>
+      <p id="modelLimit" class="model-limit">Wähle ein Beispiel aus.</p>
+      <div class="protocol-actions">
+        <button id="generateProtocolBtn" type="button">Protokolltext erzeugen</button>
+        <button id="copyProtocolBtn" class="secondary" type="button">Protokolltext kopieren</button>
+      </div>
+      <textarea id="protocolOutput" class="protocol-output" rows="12" placeholder="Hier erscheint der Protokolltext."></textarea>
+    </section>
   </main>
 
   <footer class="wrap footer">
     <p>
-      v0.2.5 ergänzt gebräuchliche Atomfarben in den Detaildarstellungen; v0.2.4 korrigierte die Kalotten-/Spacefill-Darstellung; v0.2.2 ergänzt einen hellgrauen Viewer-Hintergrund und einfache Darstellungsoptionen. v0.2.1 vermeidet vorerst fragile AlphaFold-Remote-Dateilinks: Trp-cage und Ubiquitin laden stabil die experimentellen RCSB-Strukturen; KI-Modelle werden als Upload bzw. später als lokale, kuratierte PDB-Dateien ergänzt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
+      v0.3.0 ergänzt einen geführten Beobachtungs- und Protokollbereich. v0.2.5 ergänzte gebräuchliche Atomfarben in den Detaildarstellungen; v0.2.4 korrigierte die Kalotten-/Spacefill-Darstellung. Remote-AlphaFold-Dateilinks bleiben vorerst deaktiviert: KI-Modelle werden als Upload bzw. später als lokale, kuratierte PDB-Dateien ergänzt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
     </p>
   </footer>
 
-  <script src="app.js?v=0.2.5"></script>
+  <script src="app.js?v=0.3.0"></script>
 </body>
 </html>

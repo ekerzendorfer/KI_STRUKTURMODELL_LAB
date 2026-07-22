@@ -183,3 +183,43 @@ code { background: #eef0f7; border-radius: 6px; padding: 1px 5px; }
   padding: 10px 12px;
   color: var(--muted);
 }
+
+.protocol-panel h3 {
+  margin: 14px 0 6px;
+  font-size: 1.02rem;
+}
+.observation-list {
+  margin: 6px 0 8px 1.2rem;
+  padding: 0;
+}
+.observation-list li { margin: 4px 0; }
+.model-limit {
+  border-left: 4px solid #5c6bc0;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  color: var(--text);
+}
+.protocol-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+.protocol-output {
+  width: 100%;
+  min-height: 250px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .92rem;
+  line-height: 1.45;
+  background: #fbfcff;
+  color: var(--text);
+}
+.protocol-output:focus {
+  outline: 2px solid #c5cae9;
+  border-color: var(--accent);
+}

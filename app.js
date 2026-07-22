@@ -1,9 +1,8 @@
-/* KI-Strukturmodell-Labor v0.2.5
+/* KI-Strukturmodell-Labor v0.3.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2.5: Atomdetail-Darstellungen verwenden gebräuchliche Elementfarben;
-   Cartoon/Bänder bleiben als Modellfarben für den Strukturvergleich erhalten. */
+   v0.3.0: ergänzt Beobachtungsauftrag, Modellgrenze und kopierbaren Protokolltext. */
 
-const APP_VERSION = "0.2.5";
+const APP_VERSION = "0.3.0";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -33,7 +32,12 @@ const els = {
   viewerBackground: document.getElementById("viewerBackground"),
   representationMode: document.getElementById("representationMode"),
   pdbUpload: document.getElementById("pdbUpload"),
-  clearUploadBtn: document.getElementById("clearUploadBtn")
+  clearUploadBtn: document.getElementById("clearUploadBtn"),
+  observationPrompts: document.getElementById("observationPrompts"),
+  modelLimit: document.getElementById("modelLimit"),
+  generateProtocolBtn: document.getElementById("generateProtocolBtn"),
+  copyProtocolBtn: document.getElementById("copyProtocolBtn"),
+  protocolOutput: document.getElementById("protocolOutput")
 };
 
 init();
@@ -80,6 +84,8 @@ function wireEvents() {
     els.pdbUpload.value = "";
     loadCurrentExample();
   });
+  els.generateProtocolBtn?.addEventListener("click", generateProtocolText);
+  els.copyProtocolBtn?.addEventListener("click", copyProtocolText);
 }
 
 function renderCards(examples) {
@@ -107,6 +113,8 @@ function selectExample(id) {
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
   renderExampleInfo(currentExample);
   renderQuestions(currentExample);
+  renderGuidance(currentExample);
+  if (els.protocolOutput) els.protocolOutput.value = "";
   currentView = currentExample.views?.overlay ? "overlay" : "experiment";
   document.querySelectorAll(".viewBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.view === currentView));
   updateCheckboxesForView();
@@ -134,6 +142,53 @@ function renderQuestions(ex) {
     els.questions.appendChild(li);
   });
   els.takeaway.textContent = ex.takeaway || "";
+}
+
+function renderGuidance(ex) {
+  if (!els.observationPrompts || !els.modelLimit) return;
+  els.observationPrompts.innerHTML = "";
+  const prompts = ex.observation_prompts || [
+    "Betrachte zuerst die Gesamtform der Struktur.",
+    "Wechsle zwischen Bänder- und Detaildarstellung und beschreibe, welche Information zusätzlich sichtbar wird.",
+    "Formuliere eine Modellgrenze: Was zeigt diese Struktur gut, was nicht?"
+  ];
+  prompts.forEach(prompt => {
+    const li = document.createElement("li");
+    li.textContent = prompt;
+    els.observationPrompts.appendChild(li);
+  });
+  els.modelLimit.textContent = ex.model_limit || "Für dieses Beispiel ist noch keine eigene Modellgrenze hinterlegt.";
+}
+
+function generateProtocolText() {
+  if (!currentExample || !els.protocolOutput) return;
+  const activeStructures = Object.values(loadedModels).map(entry => entry.struct?.label || "geladene Struktur");
+  const viewLabel = {
+    prediction: "KI-Modell",
+    experiment: "Experiment",
+    overlay: "Overlay",
+    differences: "Unterschiede"
+  }[currentView] || currentView;
+  const prompts = (currentExample.observation_prompts || []).map((p, i) => `${i + 1}. ${p}`).join("\n");
+  const questions = (currentExample.questions || []).map((q, i) => `${i + 1}. ${q}`).join("\n");
+  const alignment = lastAlignmentStats
+    ? `\nÜberlagerung: ${lastAlignmentStats.pairCount} gemeinsame Cα-Paare; RMSD ca. ${lastAlignmentStats.rmsd.toFixed(2)} Å.\nAuffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine oberhalb der eingestellten Schwelle"}.`
+    : "";
+
+  els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}\n\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
+}
+
+async function copyProtocolText() {
+  if (!els.protocolOutput) return;
+  if (!els.protocolOutput.value.trim()) generateProtocolText();
+  try {
+    await navigator.clipboard.writeText(els.protocolOutput.value);
+    setStatus("Protokolltext in die Zwischenablage kopiert.", "ok");
+  } catch (err) {
+    els.protocolOutput.focus();
+    els.protocolOutput.select();
+    setStatus("Kopieren per Browser nicht erlaubt. Der Protokolltext ist markiert und kann mit Strg+C kopiert werden.", "warn");
+  }
 }
 
 function updateCheckboxesForView() {
