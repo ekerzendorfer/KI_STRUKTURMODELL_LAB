@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.3.2
+/* KI-Strukturmodell-Labor v0.3.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.3.2: korrigiert die Colab-Links auf den tatsächlichen GitHub-Repo-Namen STRUKTURMODELL_LAB. */
+   v0.3.1: bereitet lokale PDB-Dateien für Standardvergleiche und externe ColabFold-Erzeugung vor. */
 
-const APP_VERSION = "0.3.2";
+const APP_VERSION = "0.3.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";

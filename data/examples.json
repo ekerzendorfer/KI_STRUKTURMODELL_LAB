@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.3.2",
-    "description": "Version 0.3.2 korrigiert die Colab-Notebook-Links auf den tatsächlichen GitHub-Repo-Namen STRUKTURMODELL_LAB.",
+    "version": "0.3.1",
+    "description": "Version 0.3.1 bereitet den Standardmodus mit lokal eingebundenen PDB-Strukturen vor: experimentelle Strukturen können lokal liegen und fallen sonst auf RCSB zurück; KI-Modelle werden als lokale, kuratierte ColabFold-PDB-Dateien erwartet.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -82,7 +82,7 @@
       ],
       "model_limit": "Trp-cage ist sehr klein und wurde experimentell als NMR-Ensemble bestimmt. Das aktuell angezeigte Modell ist daher nur ein Vertreter eines beweglichen Strukturensembles, nicht die eine endgültige Peptidform.",
       "protocol_focus": "Mini-Protein: Experiment und KI-Modell werden lokal vergleichbar; das selbst erzeugte ColabFold-Modell kann später importiert werden.",
-      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb"
+      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb"
     },
     {
       "id": "ubiquitin",
@@ -164,7 +164,7 @@
       ],
       "model_limit": "Ubiquitin ist ein sehr stabiles Referenzprotein. Eine KI-Vorhersage kann die Grundfaltung sehr gut treffen; experimentelle Strukturen liefern aber weiterhin Messdetails, flexible Bereiche, Lösungsmittel-/Kristallinformationen und konkrete Zustände.",
       "protocol_focus": "Referenzprotein: lokaler Standardvergleich Experiment vs. ColabFold-Modell; eigenes ColabFold-Ergebnis kann zusätzlich importiert werden.",
-      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb"
+      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb"
     },
     {
       "id": "calmodulin",
