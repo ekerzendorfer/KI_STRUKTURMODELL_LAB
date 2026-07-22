@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.2.1</title>
-  <link rel="stylesheet" href="style.css?v=0.2.1" />
+  <title>KI-Strukturmodell-Labor v0.2.2</title>
+  <link rel="stylesheet" href="style.css?v=0.2.2" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
 </head>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.2.1 · Cache-Schutz + robuste Experiment-Ansicht</p>
+      <p class="version">Version 0.2.2 · Viewer-Hintergrund + Darstellungsoptionen</p>
     </div>
   </header>
 
@@ -59,6 +59,22 @@
         <label><input id="showDifferenceResidues" type="checkbox" checked /> abweichende Bereiche hervorheben</label>
       </div>
 
+      <div class="viewer-options" aria-label="Viewer-Darstellung">
+        <label for="viewerBackground"><strong>Hintergrund:</strong></label>
+        <select id="viewerBackground">
+          <option value="dark">dunkel</option>
+          <option value="light">hellgrau</option>
+        </select>
+        <label for="representationMode"><strong>Darstellung:</strong></label>
+        <select id="representationMode">
+          <option value="cartoon">Bänder / Cartoon</option>
+          <option value="cartoon_stick">Bänder + Stäbchen</option>
+          <option value="stick">Stäbchen</option>
+          <option value="line">Linien</option>
+          <option value="sphere">Kalotten / Sphären</option>
+        </select>
+      </div>
+
       <div class="upload-row">
         <label for="pdbUpload"><strong>Eigenes PDB testen:</strong></label>
         <input id="pdbUpload" type="file" accept=".pdb,.ent,.txt" />
@@ -82,10 +98,10 @@
 
   <footer class="wrap footer">
     <p>
-      v0.2.1 vermeidet vorerst fragile AlphaFold-Remote-Dateilinks: Trp-cage und Ubiquitin laden stabil die experimentellen RCSB-Strukturen; KI-Modelle werden als Upload bzw. später als lokale, kuratierte PDB-Dateien ergänzt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
+      v0.2.2 ergänzt einen hellgrauen Viewer-Hintergrund und einfache Darstellungsoptionen. v0.2.1 vermeidet vorerst fragile AlphaFold-Remote-Dateilinks: Trp-cage und Ubiquitin laden stabil die experimentellen RCSB-Strukturen; KI-Modelle werden als Upload bzw. später als lokale, kuratierte PDB-Dateien ergänzt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
     </p>
   </footer>
 
-  <script src="app.js?v=0.2.1"></script>
+  <script src="app.js?v=0.2.2"></script>
 </body>
 </html>

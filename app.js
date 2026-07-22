@@ -1,9 +1,9 @@
-/* KI-Strukturmodell-Labor v0.2.1
+/* KI-Strukturmodell-Labor v0.2.2
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2.1: Cache-Busting für app/data und bewusst keine fragile Live-Abhängigkeit
-   von AlphaFold-Remote-Dateilinks. KI-Modelle kommen per Upload oder später lokal. */
+   v0.2.2: zusätzlicher Viewer-Hintergrund hellgrau/dunkel und einfache
+   Darstellungsoptionen: Cartoon, Cartoon+Stäbchen, Stäbchen, Linien, Sphären. */
 
-const APP_VERSION = "0.2.1";
+const APP_VERSION = "0.2.2";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -12,6 +12,8 @@ let loadedModels = {};
 let uploadedPdb = null;
 let lastDiffResidues = [];
 let lastAlignmentStats = null;
+let viewerBackgroundMode = "dark";
+let representationMode = "cartoon";
 const afdbCache = new Map();
 
 const els = {
@@ -27,6 +29,8 @@ const els = {
   showPrediction: document.getElementById("showPrediction"),
   showExperiment: document.getElementById("showExperiment"),
   showDifferenceResidues: document.getElementById("showDifferenceResidues"),
+  viewerBackground: document.getElementById("viewerBackground"),
+  representationMode: document.getElementById("representationMode"),
   pdbUpload: document.getElementById("pdbUpload"),
   clearUploadBtn: document.getElementById("clearUploadBtn")
 };
@@ -58,6 +62,15 @@ function wireEvents() {
   });
   [els.showPrediction, els.showExperiment, els.showDifferenceResidues].forEach(el => {
     el.addEventListener("change", () => loadCurrentExample());
+  });
+  els.viewerBackground.addEventListener("change", () => {
+    viewerBackgroundMode = els.viewerBackground.value;
+    applyViewerBackground();
+    loadCurrentExample(true);
+  });
+  els.representationMode.addEventListener("change", () => {
+    representationMode = els.representationMode.value;
+    loadCurrentExample();
   });
   els.reloadBtn.addEventListener("click", () => loadCurrentExample(true));
   els.pdbUpload.addEventListener("change", handleUpload);
@@ -204,7 +217,7 @@ async function loadCurrentExample(force = false) {
         statusLines.push(`Eigenes PDB überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
       }
       const ownModel = viewer.addModel(own, "pdb");
-      ownModel.setStyle({}, { cartoon: { color: "#7B1FA2", opacity: 0.82 } });
+      ownModel.setStyle({}, buildRepresentationStyle("#7B1FA2", 0.82));
       loadedModels.upload = { model: ownModel, pdb: own, struct: { label: "Eigenes PDB" } };
     } catch (err) {
       warnLines.push(`Eigenes PDB konnte nicht geladen/überlagert werden: ${err.message}`);
@@ -243,11 +256,28 @@ function ensureViewer() {
     cleanupStray3DmolNodes();
     els.viewer.innerHTML = "";
     const target = window.jQuery ? window.jQuery(els.viewer) : els.viewer;
-    viewer = $3Dmol.createViewer(target, { backgroundColor: "#111827" });
+    viewer = $3Dmol.createViewer(target, { backgroundColor: getViewerBackgroundColor() });
     normalizeViewerDom();
   }
   normalizeViewerDom();
+  applyViewerBackground();
   if (viewer && typeof viewer.resize === "function") viewer.resize();
+}
+
+function getViewerBackgroundColor() {
+  return viewerBackgroundMode === "light" ? "#e5e7eb" : "#111827";
+}
+
+function applyViewerBackground() {
+  const color = getViewerBackgroundColor();
+  if (els.viewerShell) {
+    els.viewerShell.style.backgroundColor = color;
+    els.viewerShell.classList.toggle("viewer-light", viewerBackgroundMode === "light");
+  }
+  if (els.viewer) els.viewer.style.backgroundColor = color;
+  if (viewer && typeof viewer.setBackgroundColor === "function") {
+    viewer.setBackgroundColor(color);
+  }
 }
 
 function normalizeViewerDom() {
@@ -264,7 +294,7 @@ function normalizeViewerDom() {
     width: "100%",
     height: "100%",
     overflow: "hidden",
-    backgroundColor: "#111827"
+    backgroundColor: getViewerBackgroundColor()
   });
   els.viewer.querySelectorAll("div, canvas").forEach(node => {
     Object.assign(node.style, {
@@ -435,8 +465,32 @@ function isAtomLine(line) { return line.startsWith("ATOM") || line.startsWith("H
 
 function applyModelStyle(model, struct, role) {
   const color = struct.color || (role === "experiment" ? "#2E7D32" : "#EF6C00");
-  model.setStyle({}, { cartoon: { color, opacity: role === "experiment" ? 0.78 : 0.88 } });
-  if (role === "prediction") model.setStyle({ hetflag: true }, { stick: { color, radius: 0.15 } });
+  const opacity = role === "experiment" ? 0.78 : 0.88;
+  model.setStyle({}, buildRepresentationStyle(color, opacity));
+
+  // Heteroatome, Liganden und Ionen bleiben bei Cartoon-Ansichten als Stäbchen/Sphären sichtbar.
+  if (representationMode === "cartoon" || representationMode === "cartoon_stick") {
+    model.setStyle({ hetflag: true }, { stick: { color, radius: 0.18 }, sphere: { color, scale: 0.32 } });
+  }
+}
+
+function buildRepresentationStyle(color, opacity) {
+  switch (representationMode) {
+    case "cartoon_stick":
+      return {
+        cartoon: { color, opacity },
+        stick: { color, radius: 0.12, opacity: Math.min(1, opacity + 0.1) }
+      };
+    case "stick":
+      return { stick: { color, radius: 0.16, opacity } };
+    case "line":
+      return { line: { color, opacity } };
+    case "sphere":
+      return { sphere: { color, scale: 0.28, opacity } };
+    case "cartoon":
+    default:
+      return { cartoon: { color, opacity } };
+  }
 }
 
 function highlightDifferences() {

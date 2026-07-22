@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.2.1",
-    "description": "Version 0.2.1 verhindert alte Browser-/GitHub-Pages-Caches und verzichtet vorerst auf fragile AlphaFold-Remote-Dateilinks. Trp-cage und Ubiquitin laden stabil experimentelle RCSB-Strukturen; KI-Modelle werden per Upload oder später als lokale PDB-Dateien ergänzt.",
+    "version": "0.2.2",
+    "description": "Version 0.2.2 ergänzt einen hellgrauen Viewer-Hintergrund und mehrere einfache Darstellungsoptionen. Trp-cage und Ubiquitin laden stabil experimentelle RCSB-Strukturen; KI-Modelle werden per Upload oder später als lokale PDB-Dateien ergänzt.",
     "model_note": "Für eine robuste Unterrichtsversion werden KI-Modelle als lokale, kuratierte und vor-ausgerichtete PDB-Dateien im Repo hinterlegt. Remote-AlphaFold-Links bleiben vorerst deaktiviert."
   },
   "examples": [
@@ -71,7 +71,7 @@
       "title": "Ubiquitin",
       "subtitle": "Referenzprotein – KI-Modell vs. Experiment",
       "level": "SEK2 / Einstieg in Modellvergleich",
-      "status": "v0.2.1: Experiment aktiv; KI-Modell per Upload/lokaler Datei in Folgeversion",
+      "status": "v0.2.2: Experiment aktiv; KI-Modell per Upload/lokaler Datei in Folgeversion",
       "core_message": "Bei einem kleinen, stabil gefalteten Protein kann das KI-Modell der experimentellen Struktur sehr ähnlich sein. Das Experiment zeigt dennoch konkrete Messdetails und flexible Bereiche.",
       "intro": "Ubiquitin ist ein kleines, gut untersuchtes Protein mit 76 Aminosäuren. Es eignet sich sehr gut als erstes robustes Vergleichsbeispiel zwischen KI-Vorhersage und experimenteller Struktur.",
       "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
@@ -96,7 +96,7 @@
           "source": "placeholder",
           "visibleByDefault": false,
           "disabled": true,
-          "note": "In v0.2.1 bewusst deaktiviert, damit keine fragilen AlphaFold-Remote-Links mehr aufgerufen werden. Ein selbst erzeugtes PDB kann über Upload getestet werden; in der nächsten stabilen Version wird ein kuratiertes lokales KI-Modell im Repo ergänzt."
+          "note": "In v0.2.2 bewusst deaktiviert, damit keine fragilen AlphaFold-Remote-Links mehr aufgerufen werden. Ein selbst erzeugtes PDB kann über Upload getestet werden; in der nächsten stabilen Version wird ein kuratiertes lokales KI-Modell im Repo ergänzt."
         }
       ],
       "views": {
@@ -128,7 +128,7 @@
         "rmsd_display": true,
         "alphafold_remote_disabled": true
       },
-      "local_note": "v0.2.1 lädt für Ubiquitin zunächst nur die experimentelle RCSB-Struktur. Das KI-Modell wird nicht mehr remote von AlphaFold DB geladen, sondern in einer späteren Version lokal/kuratiert ergänzt oder per Upload getestet.",
+      "local_note": "v0.2.2 lädt für Ubiquitin zunächst nur die experimentelle RCSB-Struktur. Das KI-Modell wird nicht mehr remote von AlphaFold DB geladen, sondern in einer späteren Version lokal/kuratiert ergänzt oder per Upload getestet.",
       "differenceThreshold": 2.0
     },
     {

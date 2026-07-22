@@ -92,7 +92,7 @@ button {
 }
 button.secondary { background: #eef0f7; color: #303747; border: 1px solid var(--line); }
 button:disabled { opacity: .45; cursor: not-allowed; }
-.controls, .options, .upload-row {
+.controls, .options, .viewer-options, .upload-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
@@ -101,6 +101,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 }
 .viewBtn { background: #eef0f7; color: #303747; border: 1px solid var(--line); }
 .viewBtn.active { background: var(--accent); color: #fff; }
+.viewer-options select {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: #fff;
+  color: var(--text);
+}
+
 .options label, .upload-row label { color: var(--muted); }
 /* Der 3Dmol-Viewer wird bewusst in einer Shell isoliert.
    3Dmol setzt intern absolut positionierte Canvas-/Div-Elemente;
@@ -117,6 +125,10 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   isolation: isolate;
   contain: layout paint;
 }
+#viewerShell.mol-viewer-shell.viewer-light {
+  background: #e5e7eb;
+}
+
 #viewer.mol-viewer-target {
   position: absolute !important;
   inset: 0 !important;
