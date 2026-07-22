@@ -102,22 +102,41 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .viewBtn { background: #eef0f7; color: #303747; border: 1px solid var(--line); }
 .viewBtn.active { background: var(--accent); color: #fff; }
 .options label, .upload-row label { color: var(--muted); }
-.viewer {
-  position: relative;
-  width: 100%;
-  height: min(62vh, 560px);
-  min-height: 420px;
+/* Der 3Dmol-Viewer wird bewusst in einer Shell isoliert.
+   3Dmol setzt intern absolut positionierte Canvas-/Div-Elemente;
+   deshalb verwenden wir keine generische Klasse .viewer mehr. */
+#viewerShell.mol-viewer-shell {
+  position: relative !important;
+  width: 100% !important;
+  height: min(62vh, 560px) !important;
+  min-height: 420px !important;
   border-radius: 16px;
   border: 1px solid var(--line);
-  overflow: hidden;
+  overflow: hidden !important;
+  background: #111827;
+  isolation: isolate;
+  contain: layout paint;
+}
+#viewer.mol-viewer-target {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
   background: #111827;
 }
-.viewer canvas,
-.viewer > div {
-  max-width: 100%;
+#viewer.mol-viewer-target > div,
+#viewer.mol-viewer-target canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
 }
-.viewer canvas {
+#viewer.mol-viewer-target canvas {
   display: block;
+  z-index: 0 !important;
 }
 .status {
   margin-top: 10px;
@@ -142,6 +161,6 @@ code { background: #eef0f7; border-radius: 6px; padding: 1px 5px; }
 
 @media (max-width: 720px) {
   .viewer-header { flex-direction: column; }
-.viewer { min-height: 360px; height: 58vh; }
+#viewerShell.mol-viewer-shell { min-height: 360px !important; height: 58vh !important; }
   .panel { padding: 14px; border-radius: 14px; }
 }

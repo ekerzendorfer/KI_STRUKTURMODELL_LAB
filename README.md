@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.1.0
+# KI-Strukturmodell-Labor v0.1.2
 
 **Arbeitstitel:** KI_STRUKTURMODELL_LAB  
 **Thema:** KI-Strukturmodell vs. experimentelle Proteinstruktur
@@ -13,7 +13,7 @@ Das Tool soll zeigen:
 
 Es ist bewusst nicht als Erweiterung des bestehenden Proteinlabors gedacht, sondern als eigenes kleines Vergleichswerkzeug.
 
-## Enthalten in v0.1.0
+## Enthalten in v0.1.2
 
 - statische GitHub-Pages-Webapp
 - datengetriebene Beispielstruktur über `data/examples.json`
@@ -27,7 +27,7 @@ Es ist bewusst nicht als Erweiterung des bestehenden Proteinlabors gedacht, sond
 
 ## Wichtiger Hinweis zu den Strukturen
 
-v0.1.0 lädt die experimentellen Strukturen und das AlphaFold-DB-Modell zunächst über Remote-URLs. Für eine spätere Unterrichtsversion sollten die wichtigsten Strukturen zusätzlich lokal im Repo abgelegt und vorab geprüft werden.
+v0.1.2 lädt die experimentellen Strukturen und das AlphaFold-DB-Modell zunächst über Remote-URLs. Für eine spätere Unterrichtsversion sollten die wichtigsten Strukturen zusätzlich lokal im Repo abgelegt und vorab geprüft werden.
 
 Bei Ubiquitin wird als KI-Modell zunächst AlphaFold DB `P62988` verwendet und auf die ersten 76 Aminosäuren beschränkt, da dieser Bereich Ubiquitin entspricht.
 

@@ -1,4 +1,4 @@
-/* KI-Strukturmodell-Labor v0.1.1
+/* KI-Strukturmodell-Labor v0.1.2
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
    Wichtig: Für v0.1 werden remote PDB-Quellen geladen; spätere Versionen sollen kuratierte lokale PDBs nutzen. */
 
@@ -13,6 +13,7 @@ let lastDiffResidues = [];
 const els = {
   cards: document.getElementById("exampleCards"),
   info: document.getElementById("exampleInfo"),
+  viewerShell: document.getElementById("viewerShell"),
   viewer: document.getElementById("viewer"),
   status: document.getElementById("status"),
   viewerHint: document.getElementById("viewerHint"),
@@ -134,8 +135,8 @@ function updateCheckboxesForView() {
 async function loadCurrentExample(force = false) {
   if (!currentExample) return;
   if (force && viewer) {
-    els.viewer.innerHTML = "";
     viewer = null;
+    resetViewerDom();
   }
   ensureViewer();
   viewer.clear();
@@ -213,14 +214,73 @@ async function loadCurrentExample(force = false) {
   }
 }
 
+function resetViewerDom() {
+  cleanupStray3DmolNodes();
+  els.viewerShell.innerHTML = '<div id="viewer" class="mol-viewer-target"></div>';
+  els.viewer = document.getElementById("viewer");
+}
+
 function ensureViewer() {
+  if (!els.viewer || !els.viewerShell.contains(els.viewer)) resetViewerDom();
+  normalizeViewerDom();
   if (!viewer) {
+    cleanupStray3DmolNodes();
     els.viewer.innerHTML = "";
-    viewer = $3Dmol.createViewer(els.viewer, { backgroundColor: "#111827" });
+    const target = window.jQuery ? window.jQuery(els.viewer) : els.viewer;
+    viewer = $3Dmol.createViewer(target, { backgroundColor: "#111827" });
+    normalizeViewerDom();
   }
   // 3Dmol verwendet absolut positionierte Canvas-Elemente. Nach Layoutänderungen
   // und besonders in Firefox hilft ein explizites Resize auf den Zielcontainer.
+  normalizeViewerDom();
   if (viewer && typeof viewer.resize === "function") viewer.resize();
+}
+
+function normalizeViewerDom() {
+  if (!els.viewerShell || !els.viewer) return;
+  Object.assign(els.viewerShell.style, {
+    position: "relative",
+    overflow: "hidden",
+    isolation: "isolate"
+  });
+  Object.assign(els.viewer.style, {
+    position: "absolute",
+    left: "0px",
+    top: "0px",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    backgroundColor: "#111827"
+  });
+  els.viewer.querySelectorAll("div, canvas").forEach(node => {
+    Object.assign(node.style, {
+      position: "absolute",
+      left: "0px",
+      top: "0px",
+      width: "100%",
+      height: "100%",
+      maxWidth: "none",
+      maxHeight: "none"
+    });
+  });
+}
+
+function cleanupStray3DmolNodes() {
+  const shell = document.getElementById("viewerShell");
+  if (!shell) return;
+  // Entfernt große, absolut/fixiert positionierte WebGL-Canvases, die 3Dmol
+  // in manchen Browsern irrtümlich außerhalb des Zielcontainers anlegt.
+  document.querySelectorAll("body > div, body > canvas").forEach(node => {
+    if (shell.contains(node)) return;
+    const hasCanvas = node.tagName === "CANVAS" || node.querySelector?.("canvas");
+    if (!hasCanvas) return;
+    const style = window.getComputedStyle(node);
+    const rect = node.getBoundingClientRect();
+    const looksLikeFloatingViewer =
+      (style.position === "absolute" || style.position === "fixed") &&
+      rect.width > 250 && rect.height > 180;
+    if (looksLikeFloatingViewer) node.remove();
+  });
 }
 
 function showEmptyViewerNotice() {
