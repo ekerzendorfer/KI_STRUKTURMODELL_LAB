@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.2.3
+# KI-Strukturmodell-Labor v0.2.4
 
 Mini-Tool für den Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
@@ -6,10 +6,11 @@ Didaktischer Kern:
 
 > Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen.
 
-## Neu in v0.2.3
+## Neu in v0.2.4
 
 - Umschaltbarer Viewer-Hintergrund: dunkel oder hellgrau.
-- Einfache Darstellungsoptionen: Bänder/Cartoon, Bänder + Stäbchen, Stäbchen, Linien, Kalotten/Sphären.
+- Einfache Darstellungsoptionen: Bänder/Cartoon, Bänder + Stäbchen, Stäbchen, Linien, Kalotten/Spacefill.
+- Kalotten/Spacefill-Darstellung korrigiert: Protein-Atome werden nun mit realistisch größerem Radius dargestellt und nicht mehr als isolierte Punktwolke.
 - Die stabilen Remote-Strukturen aus v0.2.1 bleiben unverändert.
 - Trp-cage und Ubiquitin laden weiterhin die experimentellen RCSB-Strukturen.
 - KI-Modelle können über den Upload getestet werden und werden in einer Folgeversion als lokale, kuratierte PDB-Dateien im Repo ergänzt.
@@ -64,6 +65,6 @@ Settings → Pages → Deploy from branch → main → /root
 - AlphaFold3 wird nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur ergänzt werden.
 
 
-## Hinweis zu Darstellungsarten in v0.2.3
+## Hinweis zu Darstellungsarten in v0.2.4
 
 Kristallwasser wird standardmäßig aus den PDB-Dateien entfernt, damit im reinen Bändermodell keine verstreuten Kugeln über dem Protein erscheinen. Ionen und Liganden können später bei passenden Beispielen gezielt zugeschaltet werden. Die Darstellung „Bänder / Cartoon“ zeigt nun wieder ein reines Protein-Bändermodell.

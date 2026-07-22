@@ -1,9 +1,9 @@
-/* KI-Strukturmodell-Labor v0.2.3
+/* KI-Strukturmodell-Labor v0.2.4
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2.3: saubere Protein-Darstellungen; Kristallwasser wird entfernt,
+   v0.2.4: Kalotten/Spacefill-Darstellung korrigiert;
    reine Bänder bleiben wirklich reine Bänder, Ionen/Liganden optional. */
 
-const APP_VERSION = "0.2.3";
+const APP_VERSION = "0.2.4";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -511,7 +511,7 @@ function buildRepresentationStyle(color, opacity) {
     case "line":
       return { line: { color, opacity } };
     case "sphere":
-      return { sphere: { color, scale: 0.25, opacity } };
+      return { sphere: { color, scale: 0.92, opacity } };
     case "cartoon":
     default:
       return { cartoon: { color, opacity } };

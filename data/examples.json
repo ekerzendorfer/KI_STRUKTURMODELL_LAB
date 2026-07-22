@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.2.3",
-    "description": "Version 0.2.3 korrigiert die Protein-Darstellungen: Kristallwasser wird standardmäßig ausgeblendet, reine Bänder bleiben reine Bänder, und Ionen/Liganden können später gezielt eingeblendet werden.",
+    "version": "0.2.4",
+    "description": "Version 0.2.4 korrigiert zusätzlich die Kalotten-/Spacefill-Darstellung: Protein-Atome erscheinen nun als zusammenhängendes Kalottenmodell statt als zu kleine Einzelkugeln.",
     "model_note": "Für eine robuste Unterrichtsversion werden KI-Modelle als lokale, kuratierte und vor-ausgerichtete PDB-Dateien im Repo hinterlegt. Remote-AlphaFold-Links bleiben vorerst deaktiviert."
   },
   "examples": [
@@ -11,7 +11,7 @@
       "title": "Trp-cage",
       "subtitle": "Mini-Protein / Peptid – Einstieg",
       "level": "Einstieg / SEK1–SEK2",
-      "status": "v0.2.3: experimentelle NMR-Struktur aktiv; KI-Modell per Upload/Colab später ergänzen",
+      "status": "v0.2.4: experimentelle NMR-Struktur aktiv; KI-Modell per Upload/Colab später ergänzen",
       "core_message": "Schon eine kurze Aminosäuresequenz kann eine erkennbare 3D-Struktur ausbilden. Gleichzeitig bleiben kleine Peptide bewegliche Systeme.",
       "intro": "Trp-cage ist ein sehr kleines Miniprotein mit nur 20 Aminosäuren. Es eignet sich als niederschwelliger Einstieg in die Frage, wie aus einer Sequenz eine räumliche Struktur entstehen kann.",
       "sequence": "NLYIQWLKDGGPSSGRPPPS",
@@ -72,7 +72,7 @@
       "title": "Ubiquitin",
       "subtitle": "Referenzprotein – KI-Modell vs. Experiment",
       "level": "SEK2 / Einstieg in Modellvergleich",
-      "status": "v0.2.3: Experiment aktiv; reines Bändermodell ohne Kristallwasser-Kugeln; KI-Modell per Upload/lokaler Datei in Folgeversion",
+      "status": "v0.2.4: Experiment aktiv; reines Bändermodell ohne Kristallwasser-Kugeln; KI-Modell per Upload/lokaler Datei in Folgeversion",
       "core_message": "Bei einem kleinen, stabil gefalteten Protein kann das KI-Modell der experimentellen Struktur sehr ähnlich sein. Das Experiment zeigt dennoch konkrete Messdetails und flexible Bereiche.",
       "intro": "Ubiquitin ist ein kleines, gut untersuchtes Protein mit 76 Aminosäuren. Es eignet sich sehr gut als erstes robustes Vergleichsbeispiel zwischen KI-Vorhersage und experimenteller Struktur.",
       "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
