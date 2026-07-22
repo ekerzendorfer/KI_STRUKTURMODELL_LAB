@@ -1,9 +1,9 @@
-/* KI-Strukturmodell-Labor v0.2.4
+/* KI-Strukturmodell-Labor v0.2.5
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2.4: Kalotten/Spacefill-Darstellung korrigiert;
-   reine Bänder bleiben wirklich reine Bänder, Ionen/Liganden optional. */
+   v0.2.5: Atomdetail-Darstellungen verwenden gebräuchliche Elementfarben;
+   Cartoon/Bänder bleiben als Modellfarben für den Strukturvergleich erhalten. */
 
-const APP_VERSION = "0.2.4";
+const APP_VERSION = "0.2.5";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -498,20 +498,28 @@ function applyModelStyle(model, struct, role) {
 }
 
 function buildRepresentationStyle(color, opacity) {
+  // Für Gesamtvergleiche bleiben Cartoon/Bänder in Modellfarben
+  // (Experiment/KI-Modell) gut unterscheidbar. Atomnahe Darstellungen
+  // verwenden dagegen gebräuchliche Elementfarben nach Jmol/CPK-Schema:
+  // C grau, O rot, N blau, S gelb/orange usw.
+  const atomStick = { colorscheme: "Jmol", radius: 0.14, opacity };
+  const atomLine = { colorscheme: "Jmol", opacity };
+  const atomSphere = { colorscheme: "Jmol", scale: 0.92, opacity };
+
   switch (representationMode) {
     case "cartoon_stick":
       return {
         cartoon: { color, opacity },
-        stick: { color, radius: 0.10, opacity: Math.min(1, opacity + 0.08) }
+        stick: { colorscheme: "Jmol", radius: 0.10, opacity: Math.min(1, opacity + 0.08) }
       };
     case "backbone_stick":
-      return { stick: { color, radius: 0.16, opacity } };
+      return { stick: { colorscheme: "Jmol", radius: 0.16, opacity } };
     case "stick":
-      return { stick: { color, radius: 0.14, opacity } };
+      return { stick: atomStick };
     case "line":
-      return { line: { color, opacity } };
+      return { line: atomLine };
     case "sphere":
-      return { sphere: { color, scale: 0.92, opacity } };
+      return { sphere: atomSphere };
     case "cartoon":
     default:
       return { cartoon: { color, opacity } };
@@ -520,8 +528,8 @@ function buildRepresentationStyle(color, opacity) {
 
 function buildHeteroStyle(color) {
   return {
-    stick: { color, radius: 0.18, opacity: 0.9 },
-    sphere: { color, scale: 0.35, opacity: 0.9 }
+    stick: { colorscheme: "Jmol", radius: 0.18, opacity: 0.9 },
+    sphere: { colorscheme: "Jmol", scale: 0.35, opacity: 0.9 }
   };
 }
 
