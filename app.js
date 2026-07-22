@@ -1,4 +1,4 @@
-/* KI-Strukturmodell-Labor v0.1.0
+/* KI-Strukturmodell-Labor v0.1.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
    Wichtig: Für v0.1 werden remote PDB-Quellen geladen; spätere Versionen sollen kuratierte lokale PDBs nutzen. */
 
@@ -133,6 +133,10 @@ function updateCheckboxesForView() {
 
 async function loadCurrentExample(force = false) {
   if (!currentExample) return;
+  if (force && viewer) {
+    els.viewer.innerHTML = "";
+    viewer = null;
+  }
   ensureViewer();
   viewer.clear();
   loadedModels = {};
@@ -196,6 +200,7 @@ async function loadCurrentExample(force = false) {
       const disabledPred = structures.find(s => s.role === "prediction" && s.disabled);
       if (disabledPred) statusLines.push(disabledPred.note);
     } else {
+      if (typeof viewer.resize === "function") viewer.resize();
       viewer.zoomTo();
       viewer.render();
     }
@@ -210,8 +215,12 @@ async function loadCurrentExample(force = false) {
 
 function ensureViewer() {
   if (!viewer) {
+    els.viewer.innerHTML = "";
     viewer = $3Dmol.createViewer(els.viewer, { backgroundColor: "#111827" });
   }
+  // 3Dmol verwendet absolut positionierte Canvas-Elemente. Nach Layoutänderungen
+  // und besonders in Firefox hilft ein explizites Resize auf den Zielcontainer.
+  if (viewer && typeof viewer.resize === "function") viewer.resize();
 }
 
 function showEmptyViewerNotice() {
@@ -224,6 +233,7 @@ function showEmptyViewerNotice() {
     fontSize: 18,
     borderThickness: 1
   });
+  if (typeof viewer.resize === "function") viewer.resize();
   viewer.zoomTo();
   viewer.render();
 }

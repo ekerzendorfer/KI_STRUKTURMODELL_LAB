@@ -103,6 +103,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .viewBtn.active { background: var(--accent); color: #fff; }
 .options label, .upload-row label { color: var(--muted); }
 .viewer {
+  position: relative;
   width: 100%;
   height: min(62vh, 560px);
   min-height: 420px;
@@ -110,6 +111,13 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   border: 1px solid var(--line);
   overflow: hidden;
   background: #111827;
+}
+.viewer canvas,
+.viewer > div {
+  max-width: 100%;
+}
+.viewer canvas {
+  display: block;
 }
 .status {
   margin-top: 10px;
@@ -134,6 +142,6 @@ code { background: #eef0f7; border-radius: 6px; padding: 1px 5px; }
 
 @media (max-width: 720px) {
   .viewer-header { flex-direction: column; }
-  .viewer { min-height: 360px; height: 58vh; }
+.viewer { min-height: 360px; height: 58vh; }
   .panel { padding: 14px; border-radius: 14px; }
 }
