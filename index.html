@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.1.2</title>
+  <title>KI-Strukturmodell-Labor v0.2.0</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.1.2 · isolierter Viewer-Container</p>
+      <p class="version">Version 0.2.0 · AlphaFold-DB-API + robustere Lade-Logik</p>
     </div>
   </header>
 
@@ -82,7 +82,7 @@
 
   <footer class="wrap footer">
     <p>
-      v0.1.2 legt die erweiterbare Struktur an und isoliert den 3Dmol-Viewer stärker, damit der Viewer nicht über dem Seiteninhalt liegt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
+      v0.2.0 stabilisiert die Lade-Logik: Experimentelle Strukturen bleiben sichtbar, auch wenn ein KI-Modell nicht erreichbar ist. Für Ubiquitin wird die aktuelle AlphaFold-Struktur über die AlphaFold-DB-API angefragt. AlphaFold3 wird bewusst noch nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur geladen werden.
     </p>
   </footer>
 

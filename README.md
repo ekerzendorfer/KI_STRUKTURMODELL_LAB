@@ -1,37 +1,21 @@
-# KI-Strukturmodell-Labor v0.1.2
+# KI-Strukturmodell-Labor v0.2.0
 
-**Arbeitstitel:** KI_STRUKTURMODELL_LAB  
-**Thema:** KI-Strukturmodell vs. experimentelle Proteinstruktur
+Mini-Tool für den Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
-Diese erste Version legt die Architektur für ein kleines, erweiterbares Mini-Tool an.
+Didaktischer Kern:
 
-## Ziel
+> Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen.
 
-Das Tool soll zeigen:
+## Neu in v0.2.0
 
-> Sequenz → KI-Strukturmodell → experimentelle Struktur → Overlay → Modellgrenzen verstehen.
-
-Es ist bewusst nicht als Erweiterung des bestehenden Proteinlabors gedacht, sondern als eigenes kleines Vergleichswerkzeug.
-
-## Enthalten in v0.1.2
-
-- statische GitHub-Pages-Webapp
-- datengetriebene Beispielstruktur über `data/examples.json`
-- 3Dmol.js-Viewer
-- Beispielkarten
-- Trp-cage als Einstieg angelegt
-- Ubiquitin als erster echter Modellvergleich angelegt
-- automatische Cα-basierte Überlagerung im Browser vorbereitet
-- optionaler Upload eines eigenen PDB-Modells vorbereitet
-- Calmodulin als späteres AF2/AF3/Experiment-Beispiel im Datenmodell vorgemerkt
-
-## Wichtiger Hinweis zu den Strukturen
-
-v0.1.2 lädt die experimentellen Strukturen und das AlphaFold-DB-Modell zunächst über Remote-URLs. Für eine spätere Unterrichtsversion sollten die wichtigsten Strukturen zusätzlich lokal im Repo abgelegt und vorab geprüft werden.
-
-Bei Ubiquitin wird als KI-Modell zunächst AlphaFold DB `P62988` verwendet und auf die ersten 76 Aminosäuren beschränkt, da dieser Bereich Ubiquitin entspricht.
-
-Bei Trp-cage ist das experimentelle NMR-Beispiel bereits eingebunden. Ein vorbereitetes ColabFold-Modell wird später ergänzt.
+- Viewer-Fix aus v0.1.2 bleibt erhalten.
+- Ubiquitin verwendet nun nicht mehr den alten, fest verdrahteten AlphaFold-Dateilink.
+- Das AlphaFold-Modell wird über die AlphaFold-DB-API anhand der aktuellen UniProt-ID `P62987` angefragt.
+- Die frühere obsolete/instabile Referenz `P62988` wurde entfernt.
+- Wenn ein KI-Modell nicht geladen werden kann, bleibt die experimentelle Struktur trotzdem sichtbar.
+- Statusmeldungen unterscheiden Experiment, KI-Modell, Overlay und mögliche Warnungen.
+- RMSD-Wert der Cα-Überlagerung wird im Statusbereich ausgegeben, wenn eine Überlagerung möglich ist.
+- `structures/`-Ordner vorbereitet, damit spätere Versionen lokale, kuratierte PDB-Dateien nutzen können.
 
 ## Repo-Struktur
 
@@ -46,48 +30,37 @@ KI_STRUKTURMODELL_LAB/
 │   ├── trp_cage/
 │   ├── ubiquitin/
 │   └── calmodulin/
-├── colab/
-│   └── colabfold_template.ipynb
-└── media/
+└── colab/
+    └── colabfold_template.ipynb
 ```
 
-## Lokaler Test
+## Lokal testen
 
-Wegen `fetch()` für `data/examples.json` bitte nicht einfach per Doppelklick öffnen, sondern lokal über einen kleinen Server testen:
+Nicht per Doppelklick öffnen, sondern im Repo-Ordner starten mit:
 
 ```bash
 python -m http.server 8000
 ```
 
-Dann öffnen:
+Dann im Browser:
 
 ```text
 http://localhost:8000
 ```
 
-Auf GitHub Pages funktioniert der Zugriff direkt.
+## GitHub Pages
 
-## Nächste sinnvolle Schritte
+Für GitHub Pages sollte `index.html` im Root-Verzeichnis des Repos liegen.
 
-### v0.1.1
+Empfohlene Pages-Einstellung:
 
-- Anzeige-/Fehlertexte testen
-- Ubiquitin-Overlay in verschiedenen Browsern prüfen
-- Fallback für AFDB-URL prüfen
+```text
+Settings → Pages → Deploy from branch → main → /root
+```
 
-### v0.2
+## Hinweise
 
-- vorberechnetes ColabFold-Modell für Trp-cage ergänzen
-- Strukturen lokal ins Repo übernehmen
-- didaktische Texte schärfen
-
-### v0.3
-
-- Calmodulin ergänzen
-- experimentelle Ca²⁺-gebundene Struktur
-- optional manuell erzeugtes AF3-Modell
-- optionaler Videolink zum AF3-Prozess
-
-## Didaktischer Kernsatz
-
-> AlphaFold/ColabFold liefert ein sehr wertvolles Strukturmodell aus der Sequenz. Experimentelle Strukturen zeigen aber konkrete Zustände, Liganden/Ionen, flexible Bereiche und alternative Konformationen.
+- Trp-cage nutzt in v0.2 die experimentelle RCSB-Struktur 1L2Y.
+- Ubiquitin nutzt die experimentelle RCSB-Struktur 1UBQ und versucht zusätzlich, über die AlphaFold-DB-API das aktuelle Modell zu laden.
+- Calmodulin ist weiterhin nur als spätere Erweiterung vorbereitet.
+- AlphaFold3 wird nicht angebunden; ein AF3-Calmodulin-Modell kann später als kuratierte Zusatzstruktur ergänzt werden.

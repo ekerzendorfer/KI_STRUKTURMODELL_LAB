@@ -164,3 +164,10 @@ code { background: #eef0f7; border-radius: 6px; padding: 1px 5px; }
 #viewerShell.mol-viewer-shell { min-height: 360px !important; height: 58vh !important; }
   .panel { padding: 14px; border-radius: 14px; }
 }
+.soft-note {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--muted);
+}

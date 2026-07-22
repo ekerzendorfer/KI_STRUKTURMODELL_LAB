@@ -1,6 +1,7 @@
-/* KI-Strukturmodell-Labor v0.1.2
+/* KI-Strukturmodell-Labor v0.2.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   Wichtig: Für v0.1 werden remote PDB-Quellen geladen; spätere Versionen sollen kuratierte lokale PDBs nutzen. */
+   v0.2: robustere Lade-Logik, AlphaFold-DB-API statt fest verdrahteter Datei-URL,
+   Experiment bleibt sichtbar, wenn ein KI-Modell nicht geladen werden kann. */
 
 let examplesData = null;
 let currentExample = null;
@@ -9,6 +10,8 @@ let viewer = null;
 let loadedModels = {};
 let uploadedPdb = null;
 let lastDiffResidues = [];
+let lastAlignmentStats = null;
+const afdbCache = new Map();
 
 const els = {
   cards: document.getElementById("exampleCards"),
@@ -35,9 +38,9 @@ async function init() {
     const response = await fetch("data/examples.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`examples.json konnte nicht geladen werden (${response.status})`);
     examplesData = await response.json();
-    renderCards(examplesData.examples);
+    renderCards(examplesData.examples || []);
     wireEvents();
-    if (examplesData.examples.length) selectExample(examplesData.examples[0].id);
+    if (examplesData.examples?.length) selectExample(examplesData.examples[0].id);
   } catch (err) {
     setStatus(`Fehler beim Start: ${err.message}\n\nTipp: lokal bitte über einen kleinen Webserver starten, z. B. python -m http.server 8000`, "warn");
   }
@@ -84,6 +87,8 @@ function renderCards(examples) {
 
 function selectExample(id) {
   currentExample = examplesData.examples.find(e => e.id === id);
+  uploadedPdb = null;
+  els.pdbUpload.value = "";
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
   renderExampleInfo(currentExample);
   renderQuestions(currentExample);
@@ -95,11 +100,13 @@ function selectExample(id) {
 
 function renderExampleInfo(ex) {
   const sources = (ex.sources || []).map(s => `<li><a href="${escapeAttr(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a></li>`).join("");
+  const localNote = ex.local_note ? `<p class="soft-note">${escapeHtml(ex.local_note)}</p>` : "";
   els.info.innerHTML = `
     <h2>2. Leitfrage: ${escapeHtml(ex.title)}</h2>
     <p>${escapeHtml(ex.intro || "")}</p>
     <p class="core">${escapeHtml(ex.core_message || "")}</p>
     ${ex.sequence ? `<p><strong>Sequenz:</strong> <code>${escapeHtml(ex.sequence)}</code></p>` : ""}
+    ${localNote}
     ${sources ? `<details><summary>Quellen / Struktur-IDs</summary><ul>${sources}</ul></details>` : ""}
   `;
 }
@@ -142,76 +149,84 @@ async function loadCurrentExample(force = false) {
   viewer.clear();
   loadedModels = {};
   lastDiffResidues = [];
+  lastAlignmentStats = null;
 
   const statusLines = [];
+  const warnLines = [];
   const structures = currentExample.structures || [];
   const expStruct = structures.find(s => s.role === "experiment" && !s.disabled);
   const predStruct = structures.find(s => s.role === "prediction" && !s.disabled);
 
-  try {
-    let expPdb = null;
-    let predPdb = null;
+  let expPdb = null;
+  let predPdb = null;
 
-    if (els.showExperiment.checked && expStruct) {
+  if (els.showExperiment.checked && expStruct) {
+    try {
       expPdb = await loadStructureText(expStruct);
       expPdb = preprocessPdb(expPdb, expStruct);
       const expModel = viewer.addModel(expPdb, "pdb");
       applyModelStyle(expModel, expStruct, "experiment");
       loadedModels.experiment = { model: expModel, pdb: expPdb, struct: expStruct };
       statusLines.push(`Experiment geladen: ${expStruct.label}`);
+    } catch (err) {
+      warnLines.push(`Experiment nicht geladen: ${err.message}`);
     }
+  }
 
-    if (els.showPrediction.checked && predStruct) {
+  if (els.showPrediction.checked && predStruct) {
+    try {
       predPdb = await loadStructureText(predStruct);
       predPdb = preprocessPdb(predPdb, predStruct);
       if (expPdb && predStruct.alignTo) {
-        const alignment = alignMobileToReference(predPdb, expPdb);
+        const alignment = alignMobileToReference(predPdb, expPdb, currentExample.differenceThreshold || 2.0);
         predPdb = alignment.pdb;
         lastDiffResidues = alignment.diffResidues;
-        statusLines.push(`KI-Modell überlagert: ${alignment.pairCount} Cα-Paare; auffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine > 2 Å"}`);
+        lastAlignmentStats = alignment;
+        statusLines.push(`KI-Modell überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å; auffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine > " + (currentExample.differenceThreshold || 2.0) + " Å"}`);
       }
       const predModel = viewer.addModel(predPdb, "pdb");
       applyModelStyle(predModel, predStruct, "prediction");
       loadedModels.prediction = { model: predModel, pdb: predPdb, struct: predStruct };
       statusLines.push(`KI-Modell geladen: ${predStruct.label}`);
+    } catch (err) {
+      warnLines.push(`KI-Modell nicht geladen: ${err.message}`);
+      if (predStruct.note) warnLines.push(predStruct.note);
     }
+  }
 
-    if (els.showPrediction.checked && uploadedPdb) {
+  if (els.showPrediction.checked && uploadedPdb) {
+    try {
       let own = uploadedPdb;
       if (expPdb) {
-        try {
-          const alignment = alignMobileToReference(own, expPdb);
-          own = alignment.pdb;
-          statusLines.push(`Eigenes PDB überlagert: ${alignment.pairCount} Cα-Paare.`);
-        } catch (e) {
-          statusLines.push(`Eigenes PDB geladen, aber nicht überlagert: ${e.message}`);
-        }
+        const alignment = alignMobileToReference(own, expPdb, currentExample.differenceThreshold || 2.0);
+        own = alignment.pdb;
+        statusLines.push(`Eigenes PDB überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
       }
       const ownModel = viewer.addModel(own, "pdb");
       ownModel.setStyle({}, { cartoon: { color: "#7B1FA2", opacity: 0.82 } });
       loadedModels.upload = { model: ownModel, pdb: own, struct: { label: "Eigenes PDB" } };
+    } catch (err) {
+      warnLines.push(`Eigenes PDB konnte nicht geladen/überlagert werden: ${err.message}`);
     }
-
-    if (currentView === "differences" && els.showDifferenceResidues.checked) {
-      highlightDifferences();
-    }
-
-    if (!Object.keys(loadedModels).length) {
-      showEmptyViewerNotice();
-      const disabledPred = structures.find(s => s.role === "prediction" && s.disabled);
-      if (disabledPred) statusLines.push(disabledPred.note);
-    } else {
-      if (typeof viewer.resize === "function") viewer.resize();
-      viewer.zoomTo();
-      viewer.render();
-    }
-
-    els.viewerHint.textContent = `${currentExample.title}: ${currentExample.core_message}`;
-    setStatus(statusLines.join("\n") || "Bereit.", statusLines.length ? "ok" : "warn");
-  } catch (err) {
-    showEmptyViewerNotice();
-    setStatus(`Fehler beim Laden der Struktur: ${err.message}\n\nMögliche Ursache: Remote-Datei nicht erreichbar oder Browser blockiert den Abruf. Für die spätere Unterrichtsversion sollten die PDB-Dateien lokal im Repo liegen.`, "warn");
   }
+
+  if (currentView === "differences" && els.showDifferenceResidues.checked) {
+    highlightDifferences();
+  }
+
+  if (!Object.keys(loadedModels).length) {
+    showEmptyViewerNotice();
+    const disabledPred = structures.find(s => s.role === "prediction" && s.disabled);
+    if (disabledPred) warnLines.push(disabledPred.note);
+  } else {
+    if (typeof viewer.resize === "function") viewer.resize();
+    viewer.zoomTo();
+    viewer.render();
+  }
+
+  els.viewerHint.textContent = `${currentExample.title}: ${currentExample.core_message}`;
+  const msg = [...statusLines, ...warnLines].join("\n") || "Bereit.";
+  setStatus(msg, warnLines.length ? "warn" : "ok");
 }
 
 function resetViewerDom() {
@@ -230,8 +245,6 @@ function ensureViewer() {
     viewer = $3Dmol.createViewer(target, { backgroundColor: "#111827" });
     normalizeViewerDom();
   }
-  // 3Dmol verwendet absolut positionierte Canvas-Elemente. Nach Layoutänderungen
-  // und besonders in Firefox hilft ein explizites Resize auf den Zielcontainer.
   normalizeViewerDom();
   if (viewer && typeof viewer.resize === "function") viewer.resize();
 }
@@ -268,8 +281,6 @@ function normalizeViewerDom() {
 function cleanupStray3DmolNodes() {
   const shell = document.getElementById("viewerShell");
   if (!shell) return;
-  // Entfernt große, absolut/fixiert positionierte WebGL-Canvases, die 3Dmol
-  // in manchen Browsern irrtümlich außerhalb des Zielcontainers anlegt.
   document.querySelectorAll("body > div, body > canvas").forEach(node => {
     if (shell.contains(node)) return;
     const hasCanvas = node.tagName === "CANVAS" || node.querySelector?.("canvas");
@@ -300,18 +311,71 @@ function showEmptyViewerNotice() {
 
 async function loadStructureText(struct) {
   if (struct.source === "placeholder") throw new Error(struct.note || "Struktur noch nicht hinterlegt.");
-  const urls = [struct.url, struct.fallbackUrl].filter(Boolean);
+
+  if (struct.source === "local") {
+    return await fetchTextWithFallback([struct.file, struct.url, struct.fallbackUrl].filter(Boolean));
+  }
+
+  if (struct.source === "alphafold_api") {
+    const url = await resolveAlphaFoldPdbUrl(struct.uniprot, struct.entryId);
+    return await fetchTextWithFallback([url, struct.url, struct.fallbackUrl].filter(Boolean));
+  }
+
+  return await fetchTextWithFallback([struct.url, struct.fallbackUrl].filter(Boolean));
+}
+
+async function fetchTextWithFallback(urls) {
   let lastErr = null;
   for (const url of urls) {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "force-cache" });
       if (!res.ok) throw new Error(`${url} (${res.status})`);
       return await res.text();
     } catch (err) {
       lastErr = err;
     }
   }
-  throw lastErr || new Error("Keine URL angegeben.");
+  throw lastErr || new Error("Keine Struktur-URL angegeben.");
+}
+
+async function resolveAlphaFoldPdbUrl(uniprot, preferredEntryId = null) {
+  if (!uniprot) throw new Error("AlphaFold-DB-Zugriff ohne UniProt-ID.");
+  const cacheKey = `${uniprot}|${preferredEntryId || ""}`;
+  if (afdbCache.has(cacheKey)) return afdbCache.get(cacheKey);
+
+  const endpoints = [
+    `https://alphafold.ebi.ac.uk/api/prediction/${encodeURIComponent(uniprot)}`,
+    `https://www.alphafold.ebi.ac.uk/api/prediction/${encodeURIComponent(uniprot)}`
+  ];
+
+  let data = null;
+  let lastErr = null;
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, { cache: "no-store" });
+      if (!res.ok) throw new Error(`${endpoint} (${res.status})`);
+      data = await res.json();
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (!data) throw lastErr || new Error(`AlphaFold-DB-API für ${uniprot} nicht erreichbar.`);
+
+  const records = Array.isArray(data) ? data : (data.results || data.predictions || [data]);
+  if (!records.length) throw new Error(`AlphaFold-DB-API liefert keinen Eintrag für ${uniprot}.`);
+
+  let rec = records[0];
+  if (preferredEntryId) {
+    rec = records.find(r => r.entryId === preferredEntryId || r.modelId === preferredEntryId || r.alphafoldAccession === preferredEntryId) || rec;
+  }
+
+  const url = rec.pdbUrl || rec.pdb_url || rec.pdb || rec.structureUrl || rec.structure_url;
+  if (!url) {
+    throw new Error(`AlphaFold-DB-API liefert für ${uniprot} keinen direkt nutzbaren PDB-Link. Später lokales PDB verwenden.`);
+  }
+  afdbCache.set(cacheKey, url);
+  return url;
 }
 
 function preprocessPdb(pdb, struct) {
@@ -419,14 +483,13 @@ function caMap(pdb) {
   const map = new Map();
   for (const a of parseAtoms(pdb)) {
     if (a.atom === "CA" && Number.isFinite(a.x)) {
-      // residue number is enough for the curated comparisons in v0.1
       map.set(a.resi, [a.x, a.y, a.z]);
     }
   }
   return map;
 }
 
-function alignMobileToReference(mobilePdb, refPdb) {
+function alignMobileToReference(mobilePdb, refPdb, threshold = 2.0) {
   const mobileMap = caMap(mobilePdb);
   const refMap = caMap(refPdb);
   const pairs = [];
@@ -449,13 +512,16 @@ function alignMobileToReference(mobilePdb, refPdb) {
   const transformed = transformPdb(mobilePdb, R, cm, cr);
 
   const diffResidues = [];
+  let sumSq = 0;
   for (const p of pairs) {
     const tm = add(matVec(R, sub(p.mobile, cm)), cr);
     const d = dist(tm, p.ref);
-    if (d > 2.0) diffResidues.push(p.resi);
+    sumSq += d * d;
+    if (d > threshold) diffResidues.push(p.resi);
   }
+  const rmsd = Math.sqrt(sumSq / pairs.length);
 
-  return { pdb: transformed, pairCount: pairs.length, diffResidues };
+  return { pdb: transformed, pairCount: pairs.length, diffResidues, rmsd };
 }
 
 function centroid(points) {
