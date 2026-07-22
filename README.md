@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.3.1
+# KI-Strukturmodell-Labor v0.3.2
 
 Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
@@ -9,8 +9,9 @@ Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstruk
 Die Website bleibt die stabile Vergleichsumgebung.  
 ColabFold wird bewusst als externer Vertiefungsweg genutzt.
 
-## Neu in v0.3.1
+## Neu in v0.3.2
 
+- Colab-Links auf den tatsächlichen Repo-Namen `STRUKTURMODELL_LAB` korrigiert
 - lokale Strukturpfade für den Standardmodus vorbereitet
 - experimentelle Strukturen können lokal liegen und fallen sonst auf RCSB zurück
 - KI-Modelle werden als lokale, kuratierte ColabFold-PDB-Dateien erwartet
@@ -55,3 +56,14 @@ colab/
 ```
 
 Danach GitHub Pages auf `main` und `/root` stellen.
+
+
+## Colab-Link
+
+Der Colab-Link verwendet den tatsächlichen GitHub-Repo-Namen:
+
+```text
+https://colab.research.google.com/github/ekerzendorfer/STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb
+```
+
+Wenn das Repo später umbenannt wird, muss dieser Link in `data/examples.json` entsprechend angepasst werden.
