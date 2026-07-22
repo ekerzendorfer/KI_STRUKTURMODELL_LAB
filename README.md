@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.2.0
+# KI-Strukturmodell-Labor v0.2.1
 
 Mini-Tool für den Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
@@ -6,16 +6,14 @@ Didaktischer Kern:
 
 > Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen.
 
-## Neu in v0.2.0
+## Neu in v0.2.1
 
-- Viewer-Fix aus v0.1.2 bleibt erhalten.
-- Ubiquitin verwendet nun nicht mehr den alten, fest verdrahteten AlphaFold-Dateilink.
-- Das AlphaFold-Modell wird über die AlphaFold-DB-API anhand der aktuellen UniProt-ID `P62987` angefragt.
-- Die frühere obsolete/instabile Referenz `P62988` wurde entfernt.
-- Wenn ein KI-Modell nicht geladen werden kann, bleibt die experimentelle Struktur trotzdem sichtbar.
-- Statusmeldungen unterscheiden Experiment, KI-Modell, Overlay und mögliche Warnungen.
-- RMSD-Wert der Cα-Überlagerung wird im Statusbereich ausgegeben, wenn eine Überlagerung möglich ist.
-- `structures/`-Ordner vorbereitet, damit spätere Versionen lokale, kuratierte PDB-Dateien nutzen können.
+- Cache-Schutz: `index.html` lädt `app.js` und `style.css` mit Versionsparameter.
+- `app.js` lädt `data/examples.json` ebenfalls mit Versionsparameter und Zeitstempel.
+- Ubiquitin ruft vorerst keine AlphaFold-Remote-PDB mehr auf. Dadurch verschwinden fragile 404-Fehler durch alte/unstabile AlphaFold-Dateilinks.
+- Trp-cage und Ubiquitin laden in v0.2.1 stabil die experimentellen RCSB-Strukturen.
+- KI-Modelle können über den Upload getestet werden und werden in einer Folgeversion als lokale, kuratierte PDB-Dateien im Repo ergänzt.
+- Der Viewer-Fix aus v0.1.2 bleibt erhalten.
 
 ## Repo-Struktur
 

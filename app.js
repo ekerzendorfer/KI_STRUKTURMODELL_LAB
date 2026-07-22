@@ -1,8 +1,9 @@
-/* KI-Strukturmodell-Labor v0.2.0
+/* KI-Strukturmodell-Labor v0.2.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.2: robustere Lade-Logik, AlphaFold-DB-API statt fest verdrahteter Datei-URL,
-   Experiment bleibt sichtbar, wenn ein KI-Modell nicht geladen werden kann. */
+   v0.2.1: Cache-Busting für app/data und bewusst keine fragile Live-Abhängigkeit
+   von AlphaFold-Remote-Dateilinks. KI-Modelle kommen per Upload oder später lokal. */
 
+const APP_VERSION = "0.2.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -35,7 +36,7 @@ init();
 async function init() {
   try {
     setStatus("Lade Beispiele …");
-    const response = await fetch("data/examples.json", { cache: "no-store" });
+    const response = await fetch(`data/examples.json?v=${APP_VERSION}&t=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`examples.json konnte nicht geladen werden (${response.status})`);
     examplesData = await response.json();
     renderCards(examplesData.examples || []);
