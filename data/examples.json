@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.4.0",
-    "description": "Version 0.4.0 stellt Trp-cage und Ubiquitin auf vollständig lokale Referenzstrukturen und je zwei lokale ColabFold-KI-Modelle um: beste Bewertung und Vergleichsmodell.",
+    "version": "0.4.1",
+    "description": "Version 0.4.1 ergänzt optional didaktische Störmodelle. Fehlt didactic_decoy.pdb, erscheint nur ein Hinweis; die App läuft weiter.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -11,7 +11,7 @@
       "title": "Trp-cage",
       "subtitle": "Mini-Protein / Peptid – Einstieg",
       "level": "Einstieg / SEK1–SEK2",
-      "status": "lokal · best/alternative",
+      "status": "lokal · best/alternative/decoy",
       "core_message": "Schon eine kurze Aminosäuresequenz kann eine erkennbare 3D-Struktur ausbilden. Gleichzeitig bleiben kleine Peptide bewegliche Systeme.",
       "intro": "Trp-cage ist ein sehr kleines Miniprotein mit nur 20 Aminosäuren. Es eignet sich als niederschwelliger Einstieg in die Frage, wie aus einer Sequenz eine räumliche Struktur entstehen kann.",
       "sequence": "NLYIQWLKDGGPSSGRPPPS",
@@ -64,6 +64,23 @@
           "note": "Niedriger bewertetes Modell aus demselben oder einem vergleichbaren ColabFold-Lauf. Es dient dem Vergleich von Modellqualität und Modellgrenzen.",
           "missingFileHint": "Kein alternatives Trp-cage-KI-Modell gefunden. Erwartet wird structures/trp_cage/af2_alternative.pdb.",
           "stripWater": true
+        },
+        {
+          "id": "prediction_decoy",
+          "label": "Didaktisches Störmodell",
+          "shortLabel": "didaktisches Störmodell",
+          "role": "prediction",
+          "variant": "decoy",
+          "source": "local_optional",
+          "file": "structures/trp_cage/didactic_decoy.pdb",
+          "alignTo": "experiment",
+          "style": "cartoon",
+          "color": "#7B1FA2",
+          "visibleByDefault": false,
+          "note": "Kein AlphaFold/ColabFold-Ergebnis. Dieses Modell ist ein bewusst gewähltes oder erzeugtes Vergleichsmodell, um stärkere Abweichungen sichtbar zu machen.",
+          "missingFileHint": "Didaktisches Störmodell für Trp-cage noch nicht hinterlegt. Optional erwartet: structures/trp_cage/didactic_decoy.pdb. Bestes Modell und Vergleichsmodell bleiben unverändert nutzbar.",
+          "stripWater": true,
+          "decoy": true
         }
       ],
       "views": {
@@ -92,7 +109,7 @@
         "prepared_local_structures": true,
         "colabfold_notebook": true
       },
-      "local_note": "v0.4.0 nutzt lokale Dateien: experimental.pdb, af2_best.pdb und af2_alternative.pdb. Das beste Modell ist der Standard; das Vergleichsmodell kann bewusst zum Diskutieren von Modellqualität gewählt werden.",
+      "local_note": "v0.4.1 nutzt lokale experimentelle Strukturen, zwei ColabFold-Modelle und optional ein didaktisches Störmodell. Fehlt didactic_decoy.pdb, bleiben bestes Modell und Vergleichsmodell normal nutzbar.",
       "observation_prompts": [
         "Betrachte zuerst das reine Bändermodell: Wirkt das Peptid eher geordnet oder stark ausgestreckt?",
         "Wechsle zu Bänder + Seitenketten und suche auffällige Seitenketten, besonders den Tryptophan-Rest.",
@@ -109,7 +126,7 @@
       "title": "Ubiquitin",
       "subtitle": "Referenzprotein – KI-Modell vs. Experiment",
       "level": "SEK2 / Einstieg in Modellvergleich",
-      "status": "lokal · best/alternative",
+      "status": "lokal · best/alternative/decoy",
       "core_message": "Bei einem kleinen, stabil gefalteten Protein kann das KI-Modell der experimentellen Struktur sehr ähnlich sein. Das Experiment zeigt dennoch konkrete Messdetails und flexible Bereiche.",
       "intro": "Ubiquitin ist ein kleines, gut untersuchtes Protein mit 76 Aminosäuren. Es eignet sich sehr gut als erstes robustes Vergleichsbeispiel zwischen KI-Vorhersage und experimenteller Struktur.",
       "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
@@ -161,6 +178,23 @@
           "note": "Niedriger bewertetes Modell aus demselben oder einem vergleichbaren ColabFold-Lauf. Es dient dem Vergleich von Modellqualität und Modellgrenzen.",
           "missingFileHint": "Kein alternatives Ubiquitin-KI-Modell gefunden. Erwartet wird structures/ubiquitin/af2_alternative.pdb.",
           "stripWater": true
+        },
+        {
+          "id": "prediction_decoy",
+          "label": "Didaktisches Störmodell",
+          "shortLabel": "didaktisches Störmodell",
+          "role": "prediction",
+          "variant": "decoy",
+          "source": "local_optional",
+          "file": "structures/ubiquitin/didactic_decoy.pdb",
+          "alignTo": "experiment",
+          "style": "cartoon",
+          "color": "#7B1FA2",
+          "visibleByDefault": false,
+          "note": "Kein AlphaFold/ColabFold-Ergebnis. Dieses Modell ist ein bewusst gewähltes oder erzeugtes Vergleichsmodell, um stärkere Abweichungen sichtbar zu machen.",
+          "missingFileHint": "Didaktisches Störmodell für Ubiquitin noch nicht hinterlegt. Optional erwartet: structures/ubiquitin/didactic_decoy.pdb. Bestes Modell und Vergleichsmodell bleiben unverändert nutzbar.",
+          "stripWater": true,
+          "decoy": true
         }
       ],
       "views": {
@@ -193,7 +227,7 @@
         "alphafold_remote_disabled": true,
         "colabfold_notebook": true
       },
-      "local_note": "v0.4.0 nutzt lokale Dateien: experimental.pdb, af2_best.pdb und af2_alternative.pdb. Das beste Modell ist der Standard; das Vergleichsmodell dient als bewusst gewählter Qualitätsvergleich.",
+      "local_note": "v0.4.1 nutzt lokale experimentelle Strukturen, zwei ColabFold-Modelle und optional ein didaktisches Störmodell. Fehlt didactic_decoy.pdb, bleiben bestes Modell und Vergleichsmodell normal nutzbar.",
       "differenceThreshold": 2.0,
       "observation_prompts": [
         "Betrachte das Bändermodell und beschreibe die Grundfaltung: kompakt, ausgedehnt, helikal, faltblattreich?",

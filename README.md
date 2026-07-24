@@ -1,16 +1,15 @@
-# KI-Strukturmodell-Labor v0.4.0
+# KI-Strukturmodell-Labor v0.4.1
 
 Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
 
-## Neu in v0.4.0
+## Neu in v0.4.1
 
-- Trp-cage und Ubiquitin sind auf vollständig lokale Strukturdateien vorbereitet.
-- Pro Beispiel können zwei ColabFold-KI-Modelle gewählt werden:
-  - **beste Bewertung** (`af2_best.pdb`)
-  - **Vergleichsmodell** (`af2_alternative.pdb`)
-- Die App bietet einen kleinen Umschalter **KI-Modell**.
-- Experimentelle Strukturen werden lokal aus `experimental.pdb` geladen; RCSB bleibt als Fallback eingetragen.
-- Das bisherige Viewer-Großfenster bleibt unverändert; kein schwebendes Fenster in dieser Version.
+- Optionale **didaktische Störmodelle** ergänzt.
+- Erwarteter Dateiname pro Beispiel: `didactic_decoy.pdb`.
+- Fehlt diese Datei, entsteht kein Fehler: Die App zeigt nur einen Hinweis.
+- Der Umschalter heißt nun **KI-/Vergleichsmodell**.
+- Das Störmodell wird ausdrücklich als **kein AlphaFold/ColabFold-Ergebnis** gekennzeichnet.
+- Viewer-Großansicht bleibt unverändert.
 
 ## Erwartete Strukturdateien
 
@@ -19,26 +18,26 @@ structures/
 ├── trp_cage/
 │   ├── experimental.pdb
 │   ├── af2_best.pdb
-│   └── af2_alternative.pdb
+│   ├── af2_alternative.pdb
+│   └── didactic_decoy.pdb        # optional
 └── ubiquitin/
     ├── experimental.pdb
     ├── af2_best.pdb
-    └── af2_alternative.pdb
+    ├── af2_alternative.pdb
+    └── didactic_decoy.pdb        # optional
 ```
 
-Übergangsweise wird für das bestbewertete Modell auch noch der alte Name `af2_colabfold.pdb` akzeptiert, falls `af2_best.pdb` noch nicht vorhanden ist.
+## Begriffe
 
-## Didaktische Begriffe
-
-- **Experiment**: experimentell bestimmte Referenzstruktur
 - **beste Bewertung**: höchstbewertetes ColabFold-Modell
-- **Vergleichsmodell**: niedriger bewertetes Modell zur Diskussion von Modellqualität und Modellgrenzen
+- **Vergleichsmodell**: niedriger bewertetes ColabFold-Modell
+- **didaktisches Störmodell**: bewusst ausgewähltes oder erzeugtes Modell, das stärkere Abweichungen sichtbar macht; kein AlphaFold/ColabFold-Ergebnis
 
-Das Vergleichsmodell ist nicht automatisch „falsch“. Es dient dazu, Bewertung, Unsicherheit und Interpretation von KI-Modellen sichtbar zu machen.
+Das didaktische Störmodell darf z. B. aus PEP-FOLD, QUARK, Phyre2, I-TASSER oder aus einer transparent künstlich veränderten Struktur stammen. Wichtig ist die klare Kennzeichnung.
 
-## Dateien für ein Update
+## Update
 
-Für ein Update auf v0.4.0 mindestens ersetzen:
+Für ein Update auf v0.4.1 mindestens ersetzen:
 
 ```text
 index.html
@@ -49,4 +48,4 @@ README.md
 colab/colabfold_template.ipynb
 ```
 
-Den Ordner `structures/` im Repo nicht mit einem leeren Ordner aus einem ZIP überschreiben, wenn dort bereits PDB-Dateien liegen.
+Den Ordner `structures/` nicht mit einem leeren Ordner überschreiben, wenn dort bereits PDB-Dateien liegen.

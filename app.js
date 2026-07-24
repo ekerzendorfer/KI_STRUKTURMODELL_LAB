@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.4.0
+/* KI-Strukturmodell-Labor v0.4.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.4.0: lokale Strukturen und KI-Modellvarianten best/alternative. */
+   v0.4.1: optionale didaktische Störmodelle. */
 
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.4.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -195,7 +195,9 @@ function generateProtocolText() {
     : "";
 
   const selectedPred = getSelectedPredictionStruct();
-  const selectedPredLine = selectedPred ? `\nGewähltes KI-Modell: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
+  const selectedPredVariant = selectedPred ? (selectedPred.variant || selectedPred.id) : "";
+  const selectedPredKind = selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell";
+  const selectedPredLine = selectedPred ? `\n${selectedPredKind}: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
 
   els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
 }
@@ -263,10 +265,13 @@ function updatePredictionModelNote() {
     els.predictionModelNote.textContent = "Für dieses Beispiel ist noch kein KI-Modell hinterlegt.";
     return;
   }
-  if ((struct.variant || struct.id) === "best") {
+  const variant = struct.variant || struct.id;
+  if (variant === "best") {
     els.predictionModelNote.textContent = "Standard: bestbewertetes ColabFold-Modell.";
-  } else if ((struct.variant || struct.id) === "alternative") {
-    els.predictionModelNote.textContent = "Vergleichsmodell: niedriger bewertetes Modell zur Diskussion von Modellqualität.";
+  } else if (variant === "alternative") {
+    els.predictionModelNote.textContent = "Vergleichsmodell: niedriger bewertetes ColabFold-Modell zur Diskussion von Modellqualität.";
+  } else if (variant === "decoy") {
+    els.predictionModelNote.textContent = "Didaktisches Störmodell: kein AlphaFold/ColabFold-Ergebnis; optional, falls didactic_decoy.pdb hinterlegt ist.";
   } else {
     els.predictionModelNote.textContent = struct.note || "";
   }
@@ -340,9 +345,16 @@ async function loadCurrentExample(force = false) {
       applyModelStyle(predModel, predStruct, "prediction");
       loadedModels.prediction = { model: predModel, pdb: predPdb, struct: predStruct };
       const predLabel = predStruct.shortLabel ? `${predStruct.label} – ${predStruct.shortLabel}` : predStruct.label;
-      statusLines.push(`KI-Modell geladen: ${predLabel} (orange).`);
+      const predVariant = predStruct.variant || predStruct.id;
+      const predKind = predVariant === "decoy" ? "Didaktisches Störmodell" : "KI-Modell";
+      statusLines.push(`${predKind} geladen: ${predLabel} (${predStruct.color || "#EF6C00"}).`);
+      if (predVariant === "decoy") {
+        statusLines.push("Hinweis: Dieses Modell ist nicht als AlphaFold/ColabFold-Ergebnis gekennzeichnet, sondern dient als didaktisches Vergleichsmodell.");
+      }
     } catch (err) {
-      warnLines.push(`KI-Modell nicht geladen: ${err.message}`);
+      const predVariant = predStruct.variant || predStruct.id;
+      const predKind = predVariant === "decoy" ? "Didaktisches Störmodell" : "KI-Modell";
+      warnLines.push(`${predKind} nicht geladen: ${err.message}`);
       if (predStruct.note) warnLines.push(predStruct.note);
     }
   }
