@@ -1,115 +1,52 @@
-# KI-Strukturmodell-Labor v0.3.7
+# KI-Strukturmodell-Labor v0.4.0
 
-Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
+Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
 
-## Didaktischer Kern
+## Neu in v0.4.0
 
-> Sequenz → KI-Strukturmodell → experimentelle Struktur → Overlay → Modellgrenzen verstehen
-
-Die Website bleibt die stabile Vergleichsumgebung.  
-ColabFold wird bewusst als externer Vertiefungsweg genutzt.
-
-## Neu in v0.3.5
-
-- JavaScript-Syntaxfehler aus v0.3.3 behoben
-- lokale PDB-Dateien werden mit Cache-Busting geladen, damit nachträglich hochgeladene Strukturen nicht durch alte 404-Caches blockiert werden
-- bessere Diagnose, falls eine Datei zwar geladen wird, aber keine erkennbaren PDB-Zeilen enthält
-- lokale Strukturpfade für den Standardmodus vorbereitet
-- experimentelle Strukturen können lokal liegen und fallen sonst auf RCSB zurück
-- KI-Modelle werden als lokale, kuratierte ColabFold-PDB-Dateien erwartet
-- Beispielseiten enthalten einen Link zum ColabFold-Template
-- `structures/`-Ordner mit Zielpfaden angelegt
-- ColabFold-Template erklärt den Workflow: Faltung extern erzeugen, PDB importieren oder ins Repo übernehmen
+- Trp-cage und Ubiquitin sind auf vollständig lokale Strukturdateien vorbereitet.
+- Pro Beispiel können zwei ColabFold-KI-Modelle gewählt werden:
+  - **beste Bewertung** (`af2_best.pdb`)
+  - **Vergleichsmodell** (`af2_alternative.pdb`)
+- Die App bietet einen kleinen Umschalter **KI-Modell**.
+- Experimentelle Strukturen werden lokal aus `experimental.pdb` geladen; RCSB bleibt als Fallback eingetragen.
+- Das bisherige Viewer-Großfenster bleibt unverändert; kein schwebendes Fenster in dieser Version.
 
 ## Erwartete Strukturdateien
 
 ```text
-structures/trp_cage/experimental.pdb
-structures/trp_cage/af2_colabfold.pdb
-
-structures/ubiquitin/experimental.pdb
-structures/ubiquitin/af2_colabfold.pdb
+structures/
+├── trp_cage/
+│   ├── experimental.pdb
+│   ├── af2_best.pdb
+│   └── af2_alternative.pdb
+└── ubiquitin/
+    ├── experimental.pdb
+    ├── af2_best.pdb
+    └── af2_alternative.pdb
 ```
 
-In v0.3.1 müssen die AF2-Dateien noch durch einen ColabFold-Lauf erzeugt und ins Repo gelegt werden.
+Übergangsweise wird für das bestbewertete Modell auch noch der alte Name `af2_colabfold.pdb` akzeptiert, falls `af2_best.pdb` noch nicht vorhanden ist.
 
-## Workflow für den Unterricht
+## Didaktische Begriffe
 
-1. Webtool öffnen.
-2. Beispiel auswählen.
-3. Experimentelle Struktur betrachten.
-4. Falls ein lokales KI-Modell vorhanden ist: Overlay mit Experiment betrachten.
-5. Optional ColabFold-Notebook öffnen.
-6. Modell selbst erzeugen.
-7. PDB über **Eigenes PDB testen** importieren.
-8. Vergleich und Modellgrenzen im Protokolltext sichern.
+- **Experiment**: experimentell bestimmte Referenzstruktur
+- **beste Bewertung**: höchstbewertetes ColabFold-Modell
+- **Vergleichsmodell**: niedriger bewertetes Modell zur Diskussion von Modellqualität und Modellgrenzen
 
-## GitHub Pages
+Das Vergleichsmodell ist nicht automatisch „falsch“. Es dient dazu, Bewertung, Unsicherheit und Interpretation von KI-Modellen sichtbar zu machen.
 
-Die Dateien müssen im Root des Repos liegen:
+## Dateien für ein Update
+
+Für ein Update auf v0.4.0 mindestens ersetzen:
 
 ```text
 index.html
 app.js
 style.css
 data/examples.json
-structures/
-colab/
+README.md
+colab/colabfold_template.ipynb
 ```
 
-Danach GitHub Pages auf `main` und `/root` stellen.
-
-
-## Test für lokale PDB-Dateien
-
-Nach dem Hochladen einer Datei wie
-
-```text
-structures/ubiquitin/af2_colabfold.pdb
-```
-
-sollte die Datei direkt unter dieser GitHub-Pages-Adresse erreichbar sein:
-
-```text
-https://ekerzendorfer.github.io/KI_STRUKTURMODELL_LAB/structures/ubiquitin/af2_colabfold.pdb
-```
-
-Die ersten sichtbaren Zeilen sollten typische PDB-Zeilen enthalten, z. B. `MODEL`, `ATOM`, `HETATM`, `TER` oder `END`.
-
-Wenn die Datei im GitHub-Repo sichtbar ist, aber über GitHub Pages noch nicht erreichbar ist, hilft meist ein kurzer Moment Warten, bis Pages neu deployed ist. Danach im Browser Strg+F5 ausführen.
-
-
-## Neu in v0.3.5
-
-- Button **Viewer vergrößern / Viewer verkleinern**
-- vergrößerter Viewer als Overlay über der Seite
-- Taste **Esc** schließt die vergrößerte Ansicht
-- abweichende Bereiche werden im Overlay-/Unterschiede-Modus sichtbarer markiert
-- rote Marker: stärker abweichende Cα-Positionen im KI-Modell
-- blaue Gegenmarker: entsprechende Positionen in der experimentellen Struktur
-- die ersten auffälligen Residuen werden direkt im Viewer beschriftet
-
-Die Differenzmarkierung ist eine didaktische Näherung auf Basis gemeinsamer Cα-Atome und einer Abstandsschwelle, nicht eine vollständige strukturbioinformatische Analyse.
-
-
-## Neu in v0.3.6
-
-- störende Kugelmarker der Differenzanzeige entfernt
-- abweichende Bereiche werden stattdessen als rote/orange Bandabschnitte im KI-Modell hervorgehoben
-- dadurch bleibt der Gesamteindruck des Overlays besser erhalten
-- die Markierung bleibt eine didaktische Näherung auf Basis gemeinsamer Cα-Positionen und einer Abstandsschwelle
-
-
-## Neu in v0.3.7
-
-- Viewer-Legende für Experiment, KI-Modell und abweichende Bereiche
-- verständlichere Statusmeldungen beim Laden und Überlagern
-- ColabFold-Hilfsnotebook neu strukturiert:
-  - Beispiel auswählen
-  - FASTA-Block kopieren
-  - Zielpfad im Repo anzeigen
-  - Ergebnis zuerst im Webtool importieren
-  - kuratiertes Modell danach optional ins Repo übernehmen
-- keine Live-Kopplung zwischen Webseite und ColabFold
-
-Der Standardmodus bleibt stabil: Lokale PDB-Dateien im Ordner `structures/` werden im Webtool geladen und überlagert.
+Den Ordner `structures/` im Repo nicht mit einem leeren Ordner aus einem ZIP überschreiben, wenn dort bereits PDB-Dateien liegen.

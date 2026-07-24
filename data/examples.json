@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.3.7",
-    "description": "Version 0.3.7 ergänzt Legende, verständlichere Status-/Workflow-Hinweise und ein klareres ColabFold-Hilfsnotebook. Der Standardmodus bleibt unverändert: lokale KI-PDBs im structures/-Ordner, ColabFold extern als Vertiefung.",
+    "version": "0.4.0",
+    "description": "Version 0.4.0 stellt Trp-cage und Ubiquitin auf vollständig lokale Referenzstrukturen und je zwei lokale ColabFold-KI-Modelle um: beste Bewertung und Vergleichsmodell.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -11,14 +11,14 @@
       "title": "Trp-cage",
       "subtitle": "Mini-Protein / Peptid – Einstieg",
       "level": "Einstieg / SEK1–SEK2",
-      "status": "Einstieg: Experiment + lokales ColabFold-Modell möglich",
+      "status": "lokal · best/alternative",
       "core_message": "Schon eine kurze Aminosäuresequenz kann eine erkennbare 3D-Struktur ausbilden. Gleichzeitig bleiben kleine Peptide bewegliche Systeme.",
       "intro": "Trp-cage ist ein sehr kleines Miniprotein mit nur 20 Aminosäuren. Es eignet sich als niederschwelliger Einstieg in die Frage, wie aus einer Sequenz eine räumliche Struktur entstehen kann.",
       "sequence": "NLYIQWLKDGGPSSGRPPPS",
       "structures": [
         {
           "id": "experiment",
-          "label": "Experiment: Trp-cage NMR-Struktur 1L2Y",
+          "label": "Experiment: Trp-cage NMR-Struktur 1L2Y, Modell 1",
           "role": "experiment",
           "source": "local",
           "file": "structures/trp_cage/experimental.pdb",
@@ -33,17 +33,36 @@
           "stripWater": true
         },
         {
-          "id": "prediction",
-          "label": "KI-Modell: ColabFold/AlphaFold2, lokal kuratiert",
+          "id": "prediction_best",
+          "label": "KI-Modell: ColabFold – beste Bewertung",
+          "shortLabel": "beste Bewertung",
           "role": "prediction",
+          "variant": "best",
           "source": "local_optional",
-          "file": "structures/trp_cage/af2_colabfold.pdb",
+          "file": "structures/trp_cage/af2_best.pdb",
+          "fallbackFile": "structures/trp_cage/af2_colabfold.pdb",
           "alignTo": "experiment",
           "style": "cartoon",
           "color": "#EF6C00",
           "visibleByDefault": true,
-          "note": "Diese Datei wird nach dem ColabFold-Lauf lokal ergänzt. Erwarteter Pfad: structures/trp_cage/af2_colabfold.pdb",
-          "missingFileHint": "Noch kein lokales Trp-cage-KI-Modell gefunden. Erzeuge es extern im ColabFold-Notebook, teste die PDB-Datei über „Eigenes PDB testen“ und lege das kuratierte Ergebnis danach als structures/trp_cage/af2_colabfold.pdb im Repo ab.",
+          "note": "Bestbewertetes ColabFold-Modell für den Standardvergleich.",
+          "missingFileHint": "Kein bestbewertetes Trp-cage-KI-Modell gefunden. Erwartet wird structures/trp_cage/af2_best.pdb. Übergangsweise wird auch af2_colabfold.pdb akzeptiert.",
+          "stripWater": true
+        },
+        {
+          "id": "prediction_alternative",
+          "label": "KI-Modell: ColabFold – Vergleichsmodell",
+          "shortLabel": "Vergleichsmodell",
+          "role": "prediction",
+          "variant": "alternative",
+          "source": "local_optional",
+          "file": "structures/trp_cage/af2_alternative.pdb",
+          "alignTo": "experiment",
+          "style": "cartoon",
+          "color": "#F57C00",
+          "visibleByDefault": false,
+          "note": "Niedriger bewertetes Modell aus demselben oder einem vergleichbaren ColabFold-Lauf. Es dient dem Vergleich von Modellqualität und Modellgrenzen.",
+          "missingFileHint": "Kein alternatives Trp-cage-KI-Modell gefunden. Erwartet wird structures/trp_cage/af2_alternative.pdb.",
           "stripWater": true
         }
       ],
@@ -51,7 +70,7 @@
         "prediction": true,
         "experiment": true,
         "overlay": true,
-        "differences": false,
+        "differences": true,
         "upload": true
       },
       "questions": [
@@ -73,7 +92,7 @@
         "prepared_local_structures": true,
         "colabfold_notebook": true
       },
-      "local_note": "Standardmodus: Die experimentelle Struktur wird geladen; das KI-Modell wird lokal aus `structures/trp_cage/af2_colabfold.pdb` verwendet, sobald diese Datei im Repo liegt. Eigene ColabFold-Ergebnisse können zuerst über „Eigenes PDB testen“ importiert werden.",
+      "local_note": "v0.4.0 nutzt lokale Dateien: experimental.pdb, af2_best.pdb und af2_alternative.pdb. Das beste Modell ist der Standard; das Vergleichsmodell kann bewusst zum Diskutieren von Modellqualität gewählt werden.",
       "observation_prompts": [
         "Betrachte zuerst das reine Bändermodell: Wirkt das Peptid eher geordnet oder stark ausgestreckt?",
         "Wechsle zu Bänder + Seitenketten und suche auffällige Seitenketten, besonders den Tryptophan-Rest.",
@@ -90,7 +109,7 @@
       "title": "Ubiquitin",
       "subtitle": "Referenzprotein – KI-Modell vs. Experiment",
       "level": "SEK2 / Einstieg in Modellvergleich",
-      "status": "Standardmodus: Experiment + lokales ColabFold-Modell",
+      "status": "lokal · best/alternative",
       "core_message": "Bei einem kleinen, stabil gefalteten Protein kann das KI-Modell der experimentellen Struktur sehr ähnlich sein. Das Experiment zeigt dennoch konkrete Messdetails und flexible Bereiche.",
       "intro": "Ubiquitin ist ein kleines, gut untersuchtes Protein mit 76 Aminosäuren. Es eignet sich sehr gut als erstes robustes Vergleichsbeispiel zwischen KI-Vorhersage und experimenteller Struktur.",
       "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
@@ -107,21 +126,40 @@
           "style": "cartoon",
           "color": "#2E7D32",
           "visibleByDefault": true,
-          "note": "Kristallstruktur von humanem Ubiquitin, 76 Aminosäuren, 1,8 Å Auflösung. Lokale Datei wird bevorzugt; RCSB dient nur als Fallback.",
+          "note": "Kristallstruktur von Ubiquitin, 76 Aminosäuren. Lokale Datei wird bevorzugt; RCSB dient nur als Fallback.",
           "stripWater": true
         },
         {
-          "id": "prediction",
-          "label": "KI-Modell: ColabFold/AlphaFold2, lokal kuratiert",
+          "id": "prediction_best",
+          "label": "KI-Modell: ColabFold – beste Bewertung",
+          "shortLabel": "beste Bewertung",
           "role": "prediction",
+          "variant": "best",
           "source": "local_optional",
-          "file": "structures/ubiquitin/af2_colabfold.pdb",
+          "file": "structures/ubiquitin/af2_best.pdb",
+          "fallbackFile": "structures/ubiquitin/af2_colabfold.pdb",
           "alignTo": "experiment",
           "style": "cartoon",
           "color": "#EF6C00",
           "visibleByDefault": true,
-          "note": "Diese Datei wird nach dem ColabFold-Lauf lokal ergänzt. Erwarteter Pfad: structures/ubiquitin/af2_colabfold.pdb",
-          "missingFileHint": "Noch kein lokales Ubiquitin-KI-Modell gefunden. Erzeuge es extern im ColabFold-Notebook, teste die PDB-Datei über „Eigenes PDB testen“ und lege das kuratierte Ergebnis danach als structures/ubiquitin/af2_colabfold.pdb im Repo ab.",
+          "note": "Bestbewertetes ColabFold-Modell für den Standardvergleich.",
+          "missingFileHint": "Kein bestbewertetes Ubiquitin-KI-Modell gefunden. Erwartet wird structures/ubiquitin/af2_best.pdb. Übergangsweise wird auch af2_colabfold.pdb akzeptiert.",
+          "stripWater": true
+        },
+        {
+          "id": "prediction_alternative",
+          "label": "KI-Modell: ColabFold – Vergleichsmodell",
+          "shortLabel": "Vergleichsmodell",
+          "role": "prediction",
+          "variant": "alternative",
+          "source": "local_optional",
+          "file": "structures/ubiquitin/af2_alternative.pdb",
+          "alignTo": "experiment",
+          "style": "cartoon",
+          "color": "#F57C00",
+          "visibleByDefault": false,
+          "note": "Niedriger bewertetes Modell aus demselben oder einem vergleichbaren ColabFold-Lauf. Es dient dem Vergleich von Modellqualität und Modellgrenzen.",
+          "missingFileHint": "Kein alternatives Ubiquitin-KI-Modell gefunden. Erwartet wird structures/ubiquitin/af2_alternative.pdb.",
           "stripWater": true
         }
       ],
@@ -129,7 +167,7 @@
         "prediction": true,
         "experiment": true,
         "overlay": true,
-        "differences": false,
+        "differences": true,
         "upload": true
       },
       "questions": [
@@ -155,7 +193,7 @@
         "alphafold_remote_disabled": true,
         "colabfold_notebook": true
       },
-      "local_note": "Standardmodus: Die experimentelle Struktur wird geladen; das KI-Modell wird lokal aus `structures/ubiquitin/af2_colabfold.pdb` verwendet, sobald diese Datei im Repo liegt. Eigene ColabFold-Ergebnisse können zuerst über „Eigenes PDB testen“ importiert werden.",
+      "local_note": "v0.4.0 nutzt lokale Dateien: experimental.pdb, af2_best.pdb und af2_alternative.pdb. Das beste Modell ist der Standard; das Vergleichsmodell dient als bewusst gewählter Qualitätsvergleich.",
       "differenceThreshold": 2.0,
       "observation_prompts": [
         "Betrachte das Bändermodell und beschreibe die Grundfaltung: kompakt, ausgedehnt, helikal, faltblattreich?",

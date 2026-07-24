@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.3.7
+/* KI-Strukturmodell-Labor v0.4.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.3.7: Legende, klarerer Status und geschärfter ColabFold-Workflow. */
+   v0.4.0: lokale Strukturen und KI-Modellvarianten best/alternative. */
 
-const APP_VERSION = "0.3.7";
+const APP_VERSION = "0.4.0";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -13,6 +13,7 @@ let lastDiffResidues = [];
 let lastAlignmentStats = null;
 let viewerBackgroundMode = "dark";
 let representationMode = "cartoon";
+let selectedPredictionVariant = "best";
 let viewerExpanded = false;
 const afdbCache = new Map();
 
@@ -33,6 +34,9 @@ const els = {
   showHetero: document.getElementById("showHetero"),
   viewerBackground: document.getElementById("viewerBackground"),
   representationMode: document.getElementById("representationMode"),
+  predictionModelRow: document.getElementById("predictionModelRow"),
+  predictionModelSelect: document.getElementById("predictionModelSelect"),
+  predictionModelNote: document.getElementById("predictionModelNote"),
   pdbUpload: document.getElementById("pdbUpload"),
   clearUploadBtn: document.getElementById("clearUploadBtn"),
   observationPrompts: document.getElementById("observationPrompts"),
@@ -79,6 +83,11 @@ function wireEvents() {
     representationMode = els.representationMode.value;
     loadCurrentExample();
   });
+  els.predictionModelSelect?.addEventListener("change", () => {
+    selectedPredictionVariant = els.predictionModelSelect.value;
+    updatePredictionModelNote();
+    loadCurrentExample(true);
+  });
   els.reloadBtn.addEventListener("click", () => loadCurrentExample(true));
   els.expandViewerBtn?.addEventListener("click", toggleViewerExpanded);
   document.addEventListener("keydown", event => {
@@ -114,12 +123,14 @@ function renderCards(examples) {
 
 function selectExample(id) {
   currentExample = examplesData.examples.find(e => e.id === id);
+  selectedPredictionVariant = getDefaultPredictionVariant(currentExample);
   uploadedPdb = null;
   els.pdbUpload.value = "";
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
   renderExampleInfo(currentExample);
   renderQuestions(currentExample);
   renderGuidance(currentExample);
+  renderPredictionSelector(currentExample);
   if (els.protocolOutput) els.protocolOutput.value = "";
   currentView = currentExample.views?.overlay ? "overlay" : "experiment";
   document.querySelectorAll(".viewBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.view === currentView));
@@ -183,7 +194,10 @@ function generateProtocolText() {
     ? `\nÜberlagerung: ${lastAlignmentStats.pairCount} gemeinsame Cα-Paare; RMSD ca. ${lastAlignmentStats.rmsd.toFixed(2)} Å.\nAuffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine oberhalb der eingestellten Schwelle"}.`
     : "";
 
-  els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}\n\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
+  const selectedPred = getSelectedPredictionStruct();
+  const selectedPredLine = selectedPred ? `\nGewähltes KI-Modell: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
+
+  els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
 }
 
 async function copyProtocolText() {
@@ -199,18 +213,77 @@ async function copyProtocolText() {
   }
 }
 
+
+function getPredictionStructures(ex = currentExample) {
+  return (ex?.structures || []).filter(s => s.role === "prediction" && !s.disabled);
+}
+
+function getDefaultPredictionVariant(ex = currentExample) {
+  const predictions = getPredictionStructures(ex);
+  const preferred = predictions.find(s => s.variant === "best" || s.visibleByDefault);
+  return (preferred?.variant || preferred?.id || predictions[0]?.variant || predictions[0]?.id || "best");
+}
+
+function getSelectedPredictionStruct(ex = currentExample) {
+  const predictions = getPredictionStructures(ex);
+  if (!predictions.length) return null;
+  return predictions.find(s => (s.variant || s.id) === selectedPredictionVariant) || predictions[0];
+}
+
+function renderPredictionSelector(ex = currentExample) {
+  const predictions = getPredictionStructures(ex);
+  if (!els.predictionModelRow || !els.predictionModelSelect) return;
+
+  if (predictions.length <= 1) {
+    els.predictionModelRow.style.display = predictions.length ? "flex" : "none";
+  } else {
+    els.predictionModelRow.style.display = "flex";
+  }
+
+  els.predictionModelSelect.innerHTML = "";
+  predictions.forEach(struct => {
+    const option = document.createElement("option");
+    option.value = struct.variant || struct.id;
+    option.textContent = struct.shortLabel || struct.label || option.value;
+    els.predictionModelSelect.appendChild(option);
+  });
+
+  if (!predictions.some(s => (s.variant || s.id) === selectedPredictionVariant)) {
+    selectedPredictionVariant = getDefaultPredictionVariant(ex);
+  }
+  els.predictionModelSelect.value = selectedPredictionVariant;
+  els.predictionModelSelect.disabled = predictions.length <= 1;
+  updatePredictionModelNote();
+}
+
+function updatePredictionModelNote() {
+  if (!els.predictionModelNote) return;
+  const struct = getSelectedPredictionStruct();
+  if (!struct) {
+    els.predictionModelNote.textContent = "Für dieses Beispiel ist noch kein KI-Modell hinterlegt.";
+    return;
+  }
+  if ((struct.variant || struct.id) === "best") {
+    els.predictionModelNote.textContent = "Standard: bestbewertetes ColabFold-Modell.";
+  } else if ((struct.variant || struct.id) === "alternative") {
+    els.predictionModelNote.textContent = "Vergleichsmodell: niedriger bewertetes Modell zur Diskussion von Modellqualität.";
+  } else {
+    els.predictionModelNote.textContent = struct.note || "";
+  }
+}
+
 function updateCheckboxesForView() {
-  const supportsPrediction = currentExample?.views?.prediction;
-  const supportsExperiment = currentExample?.views?.experiment;
+  const supportsPrediction = !!getSelectedPredictionStruct();
+  const supportsExperiment = !!(currentExample?.structures || []).find(s => s.role === "experiment" && !s.disabled);
   els.showPrediction.disabled = !supportsPrediction && !uploadedPdb;
   els.showExperiment.disabled = !supportsExperiment;
 
   if (currentView === "prediction") {
-    els.showPrediction.checked = true;
+    els.showPrediction.checked = supportsPrediction || !!uploadedPdb;
     els.showExperiment.checked = false;
   } else if (currentView === "experiment") {
     els.showPrediction.checked = false;
-    els.showExperiment.checked = true;
+    els.showExperiment.checked = supportsExperiment;
   } else if (currentView === "overlay" || currentView === "differences") {
     els.showPrediction.checked = supportsPrediction || !!uploadedPdb;
     els.showExperiment.checked = supportsExperiment;
@@ -233,7 +306,7 @@ async function loadCurrentExample(force = false) {
   const warnLines = [];
   const structures = currentExample.structures || [];
   const expStruct = structures.find(s => s.role === "experiment" && !s.disabled);
-  const predStruct = structures.find(s => s.role === "prediction" && !s.disabled);
+  const predStruct = getSelectedPredictionStruct();
 
   let expPdb = null;
   let predPdb = null;
@@ -266,7 +339,8 @@ async function loadCurrentExample(force = false) {
       const predModel = viewer.addModel(predPdb, "pdb");
       applyModelStyle(predModel, predStruct, "prediction");
       loadedModels.prediction = { model: predModel, pdb: predPdb, struct: predStruct };
-      statusLines.push(`KI-Modell geladen: ${predStruct.label} (orange).`);
+      const predLabel = predStruct.shortLabel ? `${predStruct.label} – ${predStruct.shortLabel}` : predStruct.label;
+      statusLines.push(`KI-Modell geladen: ${predLabel} (orange).`);
     } catch (err) {
       warnLines.push(`KI-Modell nicht geladen: ${err.message}`);
       if (predStruct.note) warnLines.push(predStruct.note);
@@ -410,14 +484,14 @@ async function loadStructureText(struct) {
 
   if (struct.source === "local_optional") {
     try {
-      return await fetchTextWithFallback([struct.file].filter(Boolean));
+      return await fetchTextWithFallback([struct.file, struct.fallbackFile].filter(Boolean));
     } catch (err) {
       throw new Error(struct.missingFileHint || `${struct.file || "Lokale Datei"} nicht gefunden. Erzeuge die PDB-Datei extern und lege sie im Repo ab.`);
     }
   }
 
   if (struct.source === "local") {
-    return await fetchTextWithFallback([struct.file, struct.url, struct.fallbackUrl].filter(Boolean));
+    return await fetchTextWithFallback([struct.file, struct.fallbackFile, struct.url, struct.fallbackUrl].filter(Boolean));
   }
 
   if (struct.source === "alphafold_api") {

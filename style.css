@@ -345,3 +345,39 @@ body.viewer-expanded-active {
   margin: 10px 0;
 }
 .workflow-box strong { color: var(--text); }
+
+
+.model-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.model-select-row select {
+  max-width: 260px;
+}
+
+.model-select-note {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.viewer-panel.viewer-expanded .model-select-row {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+@media (max-width: 720px) {
+  .model-select-row {
+    align-items: stretch;
+  }
+  .model-select-row select,
+  .model-select-note {
+    width: 100%;
+  }
+}
