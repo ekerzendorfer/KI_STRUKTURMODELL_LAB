@@ -1,4 +1,4 @@
-# KI-Strukturmodell-Labor v0.3.6
+# KI-Strukturmodell-Labor v0.3.7
 
 Mini-Tool zum Vergleich von KI-Strukturmodellen und experimentellen Proteinstrukturen.
 
@@ -98,3 +98,18 @@ Die Differenzmarkierung ist eine didaktische Näherung auf Basis gemeinsamer Cα
 - abweichende Bereiche werden stattdessen als rote/orange Bandabschnitte im KI-Modell hervorgehoben
 - dadurch bleibt der Gesamteindruck des Overlays besser erhalten
 - die Markierung bleibt eine didaktische Näherung auf Basis gemeinsamer Cα-Positionen und einer Abstandsschwelle
+
+
+## Neu in v0.3.7
+
+- Viewer-Legende für Experiment, KI-Modell und abweichende Bereiche
+- verständlichere Statusmeldungen beim Laden und Überlagern
+- ColabFold-Hilfsnotebook neu strukturiert:
+  - Beispiel auswählen
+  - FASTA-Block kopieren
+  - Zielpfad im Repo anzeigen
+  - Ergebnis zuerst im Webtool importieren
+  - kuratiertes Modell danach optional ins Repo übernehmen
+- keine Live-Kopplung zwischen Webseite und ColabFold
+
+Der Standardmodus bleibt stabil: Lokale PDB-Dateien im Ordner `structures/` werden im Webtool geladen und überlagert.

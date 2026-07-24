@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.3.6",
-    "description": "Version 0.3.6 ersetzt die Kugel-/Label-Markierung der abweichenden Bereiche durch eine dezente farbige Bänder-/Cartoon-Hervorhebung.",
+    "version": "0.3.7",
+    "description": "Version 0.3.7 ergänzt Legende, verständlichere Status-/Workflow-Hinweise und ein klareres ColabFold-Hilfsnotebook. Der Standardmodus bleibt unverändert: lokale KI-PDBs im structures/-Ordner, ColabFold extern als Vertiefung.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -11,7 +11,7 @@
       "title": "Trp-cage",
       "subtitle": "Mini-Protein / Peptid – Einstieg",
       "level": "Einstieg / SEK1–SEK2",
-      "status": "v0.3.1: Standardmodus lokal vorbereitet; Experiment mit lokalem Pfad + RCSB-Fallback; ColabFold-Modell als lokale Datei vorgesehen",
+      "status": "Einstieg: Experiment + lokales ColabFold-Modell möglich",
       "core_message": "Schon eine kurze Aminosäuresequenz kann eine erkennbare 3D-Struktur ausbilden. Gleichzeitig bleiben kleine Peptide bewegliche Systeme.",
       "intro": "Trp-cage ist ein sehr kleines Miniprotein mit nur 20 Aminosäuren. Es eignet sich als niederschwelliger Einstieg in die Frage, wie aus einer Sequenz eine räumliche Struktur entstehen kann.",
       "sequence": "NLYIQWLKDGGPSSGRPPPS",
@@ -43,7 +43,7 @@
           "color": "#EF6C00",
           "visibleByDefault": true,
           "note": "Diese Datei wird nach dem ColabFold-Lauf lokal ergänzt. Erwarteter Pfad: structures/trp_cage/af2_colabfold.pdb",
-          "missingFileHint": "Noch kein lokales Trp-cage-ColabFold-Modell gefunden. Erzeuge es im ColabFold-Notebook und lege die PDB-Datei als structures/trp_cage/af2_colabfold.pdb ab.",
+          "missingFileHint": "Noch kein lokales Trp-cage-KI-Modell gefunden. Erzeuge es extern im ColabFold-Notebook, teste die PDB-Datei über „Eigenes PDB testen“ und lege das kuratierte Ergebnis danach als structures/trp_cage/af2_colabfold.pdb im Repo ab.",
           "stripWater": true
         }
       ],
@@ -73,7 +73,7 @@
         "prepared_local_structures": true,
         "colabfold_notebook": true
       },
-      "local_note": "Standardmodus v0.3.1: Das Experiment kann lokal aus structures/trp_cage/experimental.pdb geladen werden; falls die Datei fehlt, wird vorerst RCSB 1L2Y verwendet. Das KI-Modell wird lokal als structures/trp_cage/af2_colabfold.pdb erwartet.",
+      "local_note": "Standardmodus: Die experimentelle Struktur wird geladen; das KI-Modell wird lokal aus `structures/trp_cage/af2_colabfold.pdb` verwendet, sobald diese Datei im Repo liegt. Eigene ColabFold-Ergebnisse können zuerst über „Eigenes PDB testen“ importiert werden.",
       "observation_prompts": [
         "Betrachte zuerst das reine Bändermodell: Wirkt das Peptid eher geordnet oder stark ausgestreckt?",
         "Wechsle zu Bänder + Seitenketten und suche auffällige Seitenketten, besonders den Tryptophan-Rest.",
@@ -90,7 +90,7 @@
       "title": "Ubiquitin",
       "subtitle": "Referenzprotein – KI-Modell vs. Experiment",
       "level": "SEK2 / Einstieg in Modellvergleich",
-      "status": "v0.3.1: Standardmodus lokal vorbereitet; Experiment mit lokalem Pfad + RCSB-Fallback; ColabFold-Modell als lokale Datei vorgesehen",
+      "status": "Standardmodus: Experiment + lokales ColabFold-Modell",
       "core_message": "Bei einem kleinen, stabil gefalteten Protein kann das KI-Modell der experimentellen Struktur sehr ähnlich sein. Das Experiment zeigt dennoch konkrete Messdetails und flexible Bereiche.",
       "intro": "Ubiquitin ist ein kleines, gut untersuchtes Protein mit 76 Aminosäuren. Es eignet sich sehr gut als erstes robustes Vergleichsbeispiel zwischen KI-Vorhersage und experimenteller Struktur.",
       "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
@@ -121,7 +121,7 @@
           "color": "#EF6C00",
           "visibleByDefault": true,
           "note": "Diese Datei wird nach dem ColabFold-Lauf lokal ergänzt. Erwarteter Pfad: structures/ubiquitin/af2_colabfold.pdb",
-          "missingFileHint": "Noch kein lokales Ubiquitin-ColabFold-Modell gefunden. Erzeuge es im ColabFold-Notebook und lege die PDB-Datei als structures/ubiquitin/af2_colabfold.pdb ab.",
+          "missingFileHint": "Noch kein lokales Ubiquitin-KI-Modell gefunden. Erzeuge es extern im ColabFold-Notebook, teste die PDB-Datei über „Eigenes PDB testen“ und lege das kuratierte Ergebnis danach als structures/ubiquitin/af2_colabfold.pdb im Repo ab.",
           "stripWater": true
         }
       ],
@@ -155,7 +155,7 @@
         "alphafold_remote_disabled": true,
         "colabfold_notebook": true
       },
-      "local_note": "Standardmodus v0.3.1: Das Experiment kann lokal aus structures/ubiquitin/experimental.pdb geladen werden; falls die Datei fehlt, wird vorerst RCSB 1UBQ verwendet. Das KI-Modell wird lokal als structures/ubiquitin/af2_colabfold.pdb erwartet.",
+      "local_note": "Standardmodus: Die experimentelle Struktur wird geladen; das KI-Modell wird lokal aus `structures/ubiquitin/af2_colabfold.pdb` verwendet, sobald diese Datei im Repo liegt. Eigene ColabFold-Ergebnisse können zuerst über „Eigenes PDB testen“ importiert werden.",
       "differenceThreshold": 2.0,
       "observation_prompts": [
         "Betrachte das Bändermodell und beschreibe die Grundfaltung: kompakt, ausgedehnt, helikal, faltblattreich?",

@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.3.6
+/* KI-Strukturmodell-Labor v0.3.7
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.3.6: dezente Differenzmarkierung ohne Kugelmarker. */
+   v0.3.7: Legende, klarerer Status und geschärfter ColabFold-Workflow. */
 
-const APP_VERSION = "0.3.6";
+const APP_VERSION = "0.3.7";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -130,7 +130,7 @@ function selectExample(id) {
 function renderExampleInfo(ex) {
   const sources = (ex.sources || []).map(s => `<li><a href="${escapeAttr(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a></li>`).join("");
   const localNote = ex.local_note ? `<p class="soft-note">${escapeHtml(ex.local_note)}</p>` : "";
-  const colabLink = ex.colab_url ? `<p class="tool-link-row"><a class="tool-link" href="${escapeAttr(ex.colab_url)}" target="_blank" rel="noopener">ColabFold-Notebook öffnen</a><span class="tool-link-note">optional: KI-Modell selbst erzeugen und als PDB importieren</span></p>` : "";
+  const colabLink = ex.colab_url ? `<p class="tool-link-row"><a class="tool-link" href="${escapeAttr(ex.colab_url)}" target="_blank" rel="noopener">ColabFold-Workflow öffnen</a><span class="tool-link-note">extern falten · PDB herunterladen · im Webtool testen · optional ins Repo übernehmen</span></p>` : "";
   els.info.innerHTML = `
     <h2>2. Leitfrage: ${escapeHtml(ex.title)}</h2>
     <p>${escapeHtml(ex.intro || "")}</p>
@@ -245,7 +245,7 @@ async function loadCurrentExample(force = false) {
       const expModel = viewer.addModel(expPdb, "pdb");
       applyModelStyle(expModel, expStruct, "experiment");
       loadedModels.experiment = { model: expModel, pdb: expPdb, struct: expStruct };
-      statusLines.push(`Experiment geladen: ${expStruct.label}`);
+      statusLines.push(`Experiment geladen: ${expStruct.label} (grün).`);
     } catch (err) {
       warnLines.push(`Experiment nicht geladen: ${err.message}`);
     }
@@ -260,12 +260,13 @@ async function loadCurrentExample(force = false) {
         predPdb = alignment.pdb;
         lastDiffResidues = alignment.diffResidues;
         lastAlignmentStats = alignment;
-        statusLines.push(`KI-Modell überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å; auffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine > " + (currentExample.differenceThreshold || 2.0) + " Å"} (Cα-Abstandsschwelle)`);
+        statusLines.push(`Overlay berechnet: ${alignment.pairCount} gemeinsame Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
+        statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle (" + lastDiffResidues.join(", ") + ")" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
       }
       const predModel = viewer.addModel(predPdb, "pdb");
       applyModelStyle(predModel, predStruct, "prediction");
       loadedModels.prediction = { model: predModel, pdb: predPdb, struct: predStruct };
-      statusLines.push(`KI-Modell geladen: ${predStruct.label}`);
+      statusLines.push(`KI-Modell geladen: ${predStruct.label} (orange).`);
     } catch (err) {
       warnLines.push(`KI-Modell nicht geladen: ${err.message}`);
       if (predStruct.note) warnLines.push(predStruct.note);
@@ -278,7 +279,7 @@ async function loadCurrentExample(force = false) {
       if (expPdb) {
         const alignment = alignMobileToReference(own, expPdb, currentExample.differenceThreshold || 2.0);
         own = alignment.pdb;
-        statusLines.push(`Eigenes PDB überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
+        statusLines.push(`Eigenes PDB importiert und überlagert: ${alignment.pairCount} Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å. Dieses Modell wird nur temporär angezeigt und nicht ins Repo gespeichert.`);
       }
       const ownModel = viewer.addModel(own, "pdb");
       ownModel.setStyle({}, buildRepresentationStyle("#7B1FA2", 0.82));
