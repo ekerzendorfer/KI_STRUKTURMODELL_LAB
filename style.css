@@ -383,3 +383,21 @@ body.viewer-expanded-active {
     width: 100%;
   }
 }
+
+
+.model-interpretation {
+  flex-basis: 100%;
+  margin-top: 6px;
+  padding: 9px 10px;
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  font-size: 0.94rem;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.viewer-panel.viewer-expanded .model-interpretation {
+  background: rgba(255, 255, 255, 0.9);
+}

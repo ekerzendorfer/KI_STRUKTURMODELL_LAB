@@ -1,51 +1,47 @@
-# KI-Strukturmodell-Labor v0.5.1
+# KI-Strukturmodell-Labor v0.5.2
 
 Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
 
-## Neu in v0.5.1
+## Neu in v0.5.2
 
-- Calmodulin erhält zwei optionale zusätzliche Vergleichspartner:
-  - **AlphaFold-DB P0DP23** (`af2_alphafold_db.pdb`)
-  - **AF3 mit Ca²⁺** (`af3_ca_model.pdb`, vorbereitet für später)
-- Fehlende Dateien erzeugen nur Hinweise; die vorhandenen Modelle bleiben nutzbar.
-- Für das AlphaFold-DB-Modell wird Residuum 1, das zusätzliche Start-Methionin der UniProt-Sequenz, ausgeblendet.
-- Danach wird die Residuen-Nummerierung um -1 verschoben, damit der Vergleich mit der 1CLL-Referenz sinnvoll bleibt.
+- Calmodulin-Erklärung didaktisch geschärft:
+  - Experiment 1CLL = konkreter Ca²⁺-gebundener Zustand
+  - ColabFold/AF2 = Sequenzmodell ohne explizit gesetzte Calcium-Ionen
+  - AlphaFold-DB = öffentliches AF2-Modell AF-P0DP23-F1
+  - AF3 mit Ca²⁺ = AlphaFold-Server-Modell mit vier explizit vorgegebenen Calcium-Ionen
+  - didaktisches Störmodell = optional, klar als Vergleichsmodell gekennzeichnet
+- Viewer-Hintergrund ist standardmäßig hellgrau.
+- Einzelansichten der KI-/Vergleichsmodelle werden bereits an der experimentellen Referenz ausgerichtet.
+- Neues Colab-Hilfsnotebook:
+  - `colab/cif_to_pdb_converter.ipynb`
+  - konvertiert CIF/mmCIF-Dateien nach PDB mit Gemmi.
 
-## AlphaFold-DB-Modell für Calmodulin
-
-Download:
-
-```text
-https://alphafold.ebi.ac.uk/files/AF-P0DP23-F1-model_v4.pdb
-```
-
-Speichern als:
-
-```text
-structures/calmodulin/af2_alphafold_db.pdb
-```
-
-AlphaFold-DB-Eintrag:
-
-```text
-https://alphafold.ebi.ac.uk/entry/P0DP23
-```
-
-## Erwartete Strukturdateien für Calmodulin
+## Calmodulin-Strukturdateien
 
 ```text
 structures/calmodulin/
 ├── experimental_ca_bound.pdb
 ├── af2_best.pdb
 ├── af2_alternative.pdb
-├── af2_alphafold_db.pdb      # optional, öffentliches AFDB-Modell P0DP23
-├── didactic_decoy.pdb        # optional
-└── af3_ca_model.pdb          # optional, späterer AF3-Server-Lauf mit Ca²⁺
+├── af2_alphafold_db.pdb
+├── af3_ca_model.pdb
+└── didactic_decoy.pdb        # optional
 ```
+
+## Didaktisches Störmodell
+
+Für Calmodulin ist ein didaktisches Störmodell optional. Es sollte nicht völlig willkürlich sein, sondern noch proteinartig wirken und z. B. eine andere Domänenorientierung oder stärker verschobene End-/Linkerbereiche zeigen.
+
+Geeignete Quellen:
+- stärker abweichendes QUARK-Modell
+- stärker abweichendes Phyre2-Modell
+- anderes transparent dokumentiertes Vergleichsmodell
+
+Wenn ColabFold/AF2, AlphaFold-DB und AF3 mit Ca²⁺ bereits genügend Kontrast liefern, kann `didactic_decoy.pdb` auch weggelassen werden.
 
 ## Update
 
-Für ein Update auf v0.5.1 mindestens ersetzen:
+Für ein Update auf v0.5.2 mindestens ersetzen:
 
 ```text
 index.html
@@ -54,6 +50,7 @@ style.css
 data/examples.json
 README.md
 colab/colabfold_template.ipynb
+colab/cif_to_pdb_converter.ipynb
 ```
 
 Den Ordner `structures/` nicht mit einem leeren Ordner überschreiben, wenn dort bereits PDB-Dateien liegen.

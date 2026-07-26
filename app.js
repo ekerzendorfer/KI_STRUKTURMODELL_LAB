@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.5.1
+/* KI-Strukturmodell-Labor v0.5.2
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.5.1: Calmodulin mit AFDB- und AF3-Slots. */
+   v0.5.2: Calmodulin-Interpretation, heller Standardhintergrund und CIF-Konverter. */
 
-const APP_VERSION = "0.5.1";
+const APP_VERSION = "0.5.2";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -11,7 +11,7 @@ let loadedModels = {};
 let uploadedPdb = null;
 let lastDiffResidues = [];
 let lastAlignmentStats = null;
-let viewerBackgroundMode = "dark";
+let viewerBackgroundMode = "light";
 let representationMode = "cartoon";
 let selectedPredictionVariant = "best";
 let viewerExpanded = false;
@@ -37,6 +37,7 @@ const els = {
   predictionModelRow: document.getElementById("predictionModelRow"),
   predictionModelSelect: document.getElementById("predictionModelSelect"),
   predictionModelNote: document.getElementById("predictionModelNote"),
+  modelInterpretation: document.getElementById("modelInterpretation"),
   pdbUpload: document.getElementById("pdbUpload"),
   clearUploadBtn: document.getElementById("clearUploadBtn"),
   observationPrompts: document.getElementById("observationPrompts"),
@@ -63,6 +64,7 @@ async function init() {
 }
 
 function wireEvents() {
+  if (els.viewerBackground) els.viewerBackground.value = viewerBackgroundMode;
   document.querySelectorAll(".viewBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       currentView = btn.dataset.view;
@@ -260,26 +262,50 @@ function renderPredictionSelector(ex = currentExample) {
 }
 
 function updatePredictionModelNote() {
-  if (!els.predictionModelNote) return;
+  if (!els.predictionModelNote && !els.modelInterpretation) return;
   const struct = getSelectedPredictionStruct();
   if (!struct) {
-    els.predictionModelNote.textContent = "Für dieses Beispiel ist noch kein KI-Modell hinterlegt.";
+    if (els.predictionModelNote) els.predictionModelNote.textContent = "Für dieses Beispiel ist noch kein KI-/Vergleichsmodell hinterlegt.";
+    if (els.modelInterpretation) els.modelInterpretation.textContent = "";
     return;
   }
+
   const variant = struct.variant || struct.id;
+  let shortNote = struct.note || "";
+  let interpretation = struct.note || "";
+
   if (variant === "best") {
-    els.predictionModelNote.textContent = "Standard: bestbewertetes ColabFold-Modell.";
+    shortNote = "Standard: bestbewertetes ColabFold/AF2-Modell.";
+    interpretation =
+      "ColabFold/AF2 best: aus der Aminosäuresequenz berechnet, ohne explizit gesetzte Calcium-Ionen. " +
+      "Dieses Modell zeigt, was ein starkes Sequenzmodell leistet, wenn der konkrete Ca²⁺-gebundene Zustand nicht als Eingabe vorgegeben wird.";
   } else if (variant === "alternative") {
-    els.predictionModelNote.textContent = "Vergleichsmodell: niedriger bewertetes ColabFold-Modell zur Diskussion von Modellqualität.";
+    shortNote = "Vergleichsmodell: weiteres ColabFold/AF2-Modell zur Diskussion von Modellqualität.";
+    interpretation =
+      "ColabFold/AF2 Vergleichsmodell: ein weiteres geranktes Modell aus dem gleichen oder einem vergleichbaren Lauf. " +
+      "Es ist nicht automatisch falsch; oft zeigt es nur, wie stabil oder variabel die Vorhersage ist.";
   } else if (variant === "afdb") {
-    els.predictionModelNote.textContent = "AlphaFold-DB-Modell: öffentliches AF2-Modell P0DP23; lokal als af2_alphafold_db.pdb ablegen.";
+    shortNote = "AlphaFold-DB: öffentliches AF2-Modell AF-P0DP23-F1.";
+    interpretation =
+      "AlphaFold-DB P0DP23: öffentliches AF2-Referenzmodell für humanes Calmodulin. " +
+      "Es ist gut als Vergleichspartner, enthält aber kein explizit vorgegebenes Ca²⁺. " +
+      "Für den Vergleich mit 1CLL blendet die App das zusätzliche Start-Methionin aus und verschiebt die Nummerierung.";
   } else if (variant === "af3_ca") {
-    els.predictionModelNote.textContent = "AF3 mit Ca²⁺: vorbereiteter optionaler Slot für ein späteres AlphaFold-Server-Modell.";
+    shortNote = "AF3 mit Ca²⁺: AlphaFold-Server-Modell mit vier explizit vorgegebenen Calcium-Ionen.";
+    interpretation =
+      "AF3 mit Ca²⁺: hier wird der Cofaktor-Kontext ausdrücklich mitgegeben. " +
+      "Gerade deshalb ist der Vergleich mit 1CLL didaktisch interessant: bessere Kontextinformation bedeutet nicht automatisch Identität mit der experimentellen Struktur. " +
+      "Abweichungen können flexible Bereiche, andere Modellannahmen oder Grenzen der Vorhersage sichtbar machen.";
   } else if (variant === "decoy") {
-    els.predictionModelNote.textContent = "Didaktisches Störmodell: kein AlphaFold/ColabFold-Ergebnis; optional, falls didactic_decoy.pdb hinterlegt ist.";
-  } else {
-    els.predictionModelNote.textContent = struct.note || "";
+    shortNote = "Didaktisches Störmodell: optionales, klar gekennzeichnetes Vergleichsmodell.";
+    interpretation =
+      "Didaktisches Störmodell: kein AlphaFold/ColabFold-Ergebnis. " +
+      "Es soll noch proteinartig aussehen, aber deutlicher abweichen, z. B. durch andere Domänenorientierung oder stärker bewegte End-/Linkerbereiche. " +
+      "Nur verwenden, wenn es die Beobachtung wirklich klarer macht.";
   }
+
+  if (els.predictionModelNote) els.predictionModelNote.textContent = shortNote;
+  if (els.modelInterpretation) els.modelInterpretation.textContent = interpretation;
 }
 
 function updateCheckboxesForView() {
@@ -335,6 +361,19 @@ async function loadCurrentExample(force = false) {
     }
   }
 
+  // Einzelansicht von KI-/Vergleichsmodellen:
+  // Wenn das Experiment nicht sichtbar ist, wird es trotzdem still als Referenz
+  // geladen, damit das Modell bereits so ausgerichtet wird wie später im Overlay.
+  if (!expPdb && els.showPrediction.checked && predStruct?.alignTo && expStruct) {
+    try {
+      let refOnly = await loadStructureText(expStruct);
+      expPdb = preprocessPdb(refOnly, expStruct);
+      statusLines.push("Experimentelle Referenz intern zur Ausrichtung geladen.");
+    } catch (err) {
+      warnLines.push(`Ausrichtung an der experimentellen Referenz nicht möglich: ${err.message}`);
+    }
+  }
+
   if (els.showPrediction.checked && predStruct) {
     try {
       predPdb = await loadStructureText(predStruct);
@@ -359,7 +398,7 @@ async function loadCurrentExample(force = false) {
       } else if (predVariant === "afdb") {
         statusLines.push("Hinweis: AlphaFold-DB P0DP23 enthält ein zusätzliches Start-Methionin; für den Vergleich mit 1CLL wird es in der App ausgeblendet und die Residuen werden umnummeriert.");
       } else if (predVariant === "af3_ca") {
-        statusLines.push("Hinweis: Dieser Slot ist für ein späteres AF3-Modell mit expliziten Calcium-Ionen vorbereitet.");
+        statusLines.push("Hinweis: AF3 wurde mit explizit vorgegebenen Calcium-Ionen berechnet; Abweichungen zum Experiment sind daher besonders gut für die Diskussion von Zustand und Modellgrenzen geeignet.");
       }
     } catch (err) {
       const predVariant = predStruct.variant || predStruct.id;

@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.5.1",
-    "description": "Version 0.5.1 ergänzt für Calmodulin optionale Slots für das AlphaFold-DB-Modell P0DP23 und ein späteres AF3-Modell mit Calcium. Zusätzlich wird ein Residuen-Offset unterstützt, damit das 149-AS-UniProt-Modell ohne Start-Methionin mit der 1CLL-Referenz vergleichbar wird.",
+    "version": "0.5.2",
+    "description": "Version 0.5.2 schärft die Calmodulin-Didaktik, stellt den Viewer-Hintergrund standardmäßig auf hell, richtet Einzelansichten von KI-/Vergleichsmodellen bereits an der experimentellen Referenz aus und ergänzt ein Colab-Notebook zur CIF→PDB-Konvertierung.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -244,9 +244,9 @@
       "title": "Calmodulin",
       "subtitle": "Calcium-bindendes Protein – Zustand & Kontext",
       "level": "Fortgeschritten / SEK2",
-      "status": "lokal vorbereitet · Ca²⁺ / AFDB / AF3",
-      "core_message": "Ein KI-Modell aus der Sequenz beschreibt ein Proteinmodell; die experimentelle Struktur zeigt hier einen konkreten Ca²⁺-gebundenen Zustand. Unterschiede können daher auf fehlenden biologischen Kontext hinweisen.",
-      "intro": "Calmodulin ist ein Calcium-bindendes Signalprotein mit EF-Hand-Motiven. Es eignet sich, um den Unterschied zwischen Sequenzmodell, experimentellem Zustand und Cofaktor-/Ionenkontext sichtbar zu machen.",
+      "status": "Calmodulin · 1CLL / AF2 / AFDB / AF3",
+      "core_message": "Calmodulin zeigt besonders klar: Ein Strukturmodell ist nicht nur eine gefaltete Sequenz, sondern immer auch eine Aussage über Kontext und Zustand. 1CLL zeigt den Ca²⁺-gebundenen Zustand; AF2/ColabFold und AlphaFold-DB modellieren die Sequenz ohne explizit gesetzte Calcium-Ionen, AF3 kann die vier Ca²⁺-Ionen als Eingabe berücksichtigen.",
+      "intro": "Calmodulin ist ein Calcium-bindendes Signalprotein mit EF-Hand-Motiven. In diesem Beispiel werden mehrere Modelltypen nebeneinander betrachtet: experimentelle Ca²⁺-Struktur, ColabFold/AF2, AlphaFold-DB und AF3 mit expliziten Calcium-Ionen.",
       "sequence": "ADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK",
       "showHeteroDefault": true,
       "hetero_note": "Bei Calmodulin sind die Calcium-Ionen didaktisch zentral. Wasser und Ethanol werden ausgeblendet; Calcium bleibt als HETATM sichtbar.",
@@ -309,21 +309,21 @@
           "variant": "afdb",
           "source": "local_optional",
           "file": "structures/calmodulin/af2_alphafold_db.pdb",
-          "downloadUrl": "https://alphafold.ebi.ac.uk/files/AF-P0DP23-F1-model_v4.pdb",
-          "entryUrl": "https://alphafold.ebi.ac.uk/entry/P0DP23",
+          "entryUrl": "https://alphafold.com/entry/AF-P0DP23-F1",
           "uniprot": "P0DP23",
           "alignTo": "experiment",
           "style": "cartoon",
           "color": "#0288D1",
           "visibleByDefault": false,
-          "note": "Vorgefertigtes AlphaFold-DB-Modell für humanes Calmodulin-1 (P0DP23/CALM1_HUMAN). Es enthält die 149-AS-UniProt-Sequenz mit zusätzlichem Start-Methionin; für den Vergleich mit 1CLL wird Residuum 1 entfernt und die Nummerierung um -1 verschoben.",
-          "missingFileHint": "AlphaFold-DB-Modell für Calmodulin noch nicht lokal hinterlegt. Lade AF-P0DP23-F1-model_v4.pdb herunter und speichere es als structures/calmodulin/af2_alphafold_db.pdb.",
+          "note": "Öffentliches AlphaFold-DB-Modell AF-P0DP23-F1 für humanes Calmodulin-1. Es enthält kein explizit vorgegebenes Ca²⁺. Da die UniProt-Sequenz ein zusätzliches Start-Methionin besitzt, wird Residuum 1 entfernt und die Nummerierung für den Vergleich mit 1CLL um -1 verschoben.",
+          "missingFileHint": "AlphaFold-DB-Modell für Calmodulin noch nicht lokal hinterlegt. Öffne https://alphafold.com/entry/AF-P0DP23-F1, lade das PDB herunter und speichere es als structures/calmodulin/af2_alphafold_db.pdb.",
           "stripWater": true,
           "residueRange": [
             2,
             149
           ],
-          "residueNumberOffset": -1
+          "residueNumberOffset": -1,
+          "apiUrl": "https://alphafold.com/api/prediction/P0DP23"
         },
         {
           "id": "prediction_af3_ca",
@@ -337,8 +337,8 @@
           "style": "cartoon",
           "color": "#00897B",
           "visibleByDefault": false,
-          "note": "Optionaler späterer Vergleichspartner aus AlphaFold 3 / AlphaFold Server mit explizit eingebundenen Calcium-Ionen. Noch nicht erforderlich für v0.5.1.",
-          "missingFileHint": "Noch kein AF3-Calcium-Modell hinterlegt. Optional erwartet: structures/calmodulin/af3_ca_model.pdb.",
+          "note": "AlphaFold-Server/AF3-Modell mit vier explizit vorgegebenen Ca²⁺-Ionen. Dieses Modell ist ein besonders guter Vergleichspartner zu 1CLL, zeigt aber weiterhin modell- und zustandsabhängige Abweichungen.",
+          "missingFileHint": "Noch kein AF3-Calcium-Modell hinterlegt. Optional erwartet: structures/calmodulin/af3_ca_model.pdb. Falls der AlphaFold-Server CIF/mmCIF liefert, kann das neue Colab-Notebook cif_to_pdb_converter.ipynb zur Konvertierung verwendet werden.",
           "stripWater": true,
           "keepHetero": [
             "CA"
@@ -356,8 +356,8 @@
           "style": "cartoon",
           "color": "#7B1FA2",
           "visibleByDefault": false,
-          "note": "Optionales Vergleichsmodell, kein AlphaFold/ColabFold-Ergebnis.",
-          "missingFileHint": "Didaktisches Störmodell für Calmodulin noch nicht hinterlegt. Optional erwartet: structures/calmodulin/didactic_decoy.pdb.",
+          "note": "Optionales didaktisches Störmodell. Es sollte nicht völlig willkürlich sein, sondern noch proteinartig aussehen, aber eine deutlich andere Domänenorientierung oder auffälligere Rand-/Linkerbereiche zeigen. Geeignete Quellen sind z. B. ein stärker abweichendes QUARK- oder Phyre2-Modell.",
+          "missingFileHint": "Didaktisches Störmodell für Calmodulin noch nicht hinterlegt. Optional erwartet: structures/calmodulin/didactic_decoy.pdb. Wenn AF3 und ColabFold bereits genügend Kontrast liefern, kann diese Datei auch weggelassen werden.",
           "stripWater": true,
           "decoy": true
         }
@@ -370,12 +370,13 @@
         "upload": true
       },
       "questions": [
-        "Welche Bereiche des Calmodulin-Modells stimmen gut mit der Ca²⁺-gebundenen experimentellen Struktur überein?",
-        "Wo weichen die Modelle stärker voneinander ab?",
-        "Warum kann ein Sequenzmodell ohne explizite Calcium-Ionen einen anderen Zustand zeigen als die experimentelle Struktur?",
-        "Unterscheidet sich das AlphaFold-DB-Modell stärker vom Ca²⁺-gebundenen Experiment als dein ColabFold-Modell?"
+        "Vergleiche zuerst 1CLL mit dem ColabFold/AF2-Modell: Welche Bereiche stimmen gut überein, welche weichen sichtbar ab?",
+        "Welche Rolle spielen die vier Ca²⁺-Ionen bei der Interpretation des experimentellen Zustands?",
+        "Vergleiche AlphaFold-DB und dein eigenes ColabFold-Modell: Sind die Unterschiede echte Zustandsinformationen oder eher kleine Modellvariationen?",
+        "Vergleiche AF3 mit Ca²⁺ mit 1CLL: Wird der Ca²⁺-gebundene Zustand besser getroffen? Wo bleiben dennoch Abweichungen sichtbar?",
+        "Formuliere vorsichtig: Welche Abweichungen könnten flexible Bereiche sein, und welche könnten auf fehlenden Kontext oder Modellgrenzen hinweisen?"
       ],
-      "takeaway": "Calmodulin zeigt besonders gut: Ein Strukturmodell ist immer auch eine Aussage über einen Zustand. Ionen, Liganden und Bindungspartner können entscheidend sein.",
+      "takeaway": "Calmodulin verschiebt die Leitfrage von „Ist das Modell richtig?“ zu „Welchen Zustand und welchen Kontext beschreibt das Modell?“",
       "sources": [
         {
           "label": "RCSB PDB: 1CLL",
@@ -386,23 +387,25 @@
           "url": "https://files.rcsb.org/download/1CLL.pdb"
         },
         {
-          "label": "AlphaFold DB: P0DP23",
-          "url": "https://alphafold.ebi.ac.uk/entry/P0DP23"
+          "label": "AlphaFold: AF-P0DP23-F1",
+          "url": "https://alphafold.com/entry/AF-P0DP23-F1"
         },
         {
-          "label": "AlphaFold DB Download: AF-P0DP23-F1-model_v4.pdb",
-          "url": "https://alphafold.ebi.ac.uk/files/AF-P0DP23-F1-model_v4.pdb"
+          "label": "AlphaFold API: P0DP23",
+          "url": "https://alphafold.com/api/prediction/P0DP23"
         }
       ],
       "future": "AFDB-Modell und AF3-Ca²⁺-Modell sind als optionale Vergleichspartner vorbereitet.",
-      "local_note": "v0.5.1 erwartet die lokale experimentelle Datei unter structures/calmodulin/experimental_ca_bound.pdb. Zusätzlich können af2_alphafold_db.pdb und später af3_ca_model.pdb abgelegt werden. Das AlphaFold-DB-Modell P0DP23 enthält die vollständige UniProt-Sequenz mit zusätzlichem Start-Methionin; die App schneidet dafür Residuum 1 ab und nummeriert die übrigen Residuen für den 1CLL-Vergleich um.",
+      "local_note": "v0.5.2 erwartet die lokale experimentelle Datei unter structures/calmodulin/experimental_ca_bound.pdb. Zusätzlich können af2_best.pdb, af2_alternative.pdb, af2_alphafold_db.pdb, af3_ca_model.pdb und optional didactic_decoy.pdb verglichen werden. Einzelansichten der KI-/Vergleichsmodelle werden bereits an der experimentellen Referenz ausgerichtet, damit sie beim Umschalten ähnlich liegen wie im Overlay.",
       "observation_prompts": [
-        "Achte auf die langgestreckte, hantelförmige Gesamtform.",
-        "Schalte Ionen/Liganden ein und lokalisiere die Calcium-Ionen.",
-        "Vergleiche, ob die beiden Domänen und die zentrale Helix im KI-Modell gleich orientiert sind."
+        "Starte mit hellem Hintergrund und Bänder-/Cartoon-Darstellung.",
+        "Schalte Ionen/Liganden ein und lokalisiere die vier Ca²⁺-Ionen.",
+        "Wechsle nacheinander zwischen ColabFold best, AlphaFold-DB und AF3 mit Ca²⁺.",
+        "Achte besonders auf N-Terminus, Linker-/Randbereiche und die Orientierung der beiden Domänen.",
+        "Nutze die Unterschiede nicht als einfache Fehlerliste, sondern als Anlass zur Frage: Welchen Zustand zeigt welches Modell?"
       ],
-      "model_limit": "ColabFold/AF2 berechnet hier ein Modell aus der Aminosäuresequenz. Der experimentelle Vergleich zeigt dagegen einen konkreten Ca²⁺-gebundenen Zustand.",
-      "protocol_focus": "Beschreibe, welche Rolle Calcium-Ionen für die Interpretation des Strukturvergleichs spielen.",
+      "model_limit": "Die Modellgrenze ist hier nicht nur Genauigkeit. Entscheidend ist der biologische Kontext: Calcium-Ionen, flexible Enden, Domänenorientierung und experimenteller Zustand beeinflussen den Vergleich.",
+      "protocol_focus": "Vergleiche die vier Modelltypen und erkläre, warum AF3 mit Ca²⁺ trotz besserem Kontext nicht automatisch identisch mit der experimentellen Struktur sein muss.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
       "differenceThreshold": 3.0
     }
