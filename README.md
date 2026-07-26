@@ -1,47 +1,23 @@
-# KI-Strukturmodell-Labor v0.5.2
+# KI-Strukturmodell-Labor v0.6.0
 
 Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
 
-## Neu in v0.5.2
+## Neu in v0.6.0
 
-- Calmodulin-Erklärung didaktisch geschärft:
-  - Experiment 1CLL = konkreter Ca²⁺-gebundener Zustand
-  - ColabFold/AF2 = Sequenzmodell ohne explizit gesetzte Calcium-Ionen
-  - AlphaFold-DB = öffentliches AF2-Modell AF-P0DP23-F1
-  - AF3 mit Ca²⁺ = AlphaFold-Server-Modell mit vier explizit vorgegebenen Calcium-Ionen
-  - didaktisches Störmodell = optional, klar als Vergleichsmodell gekennzeichnet
-- Viewer-Hintergrund ist standardmäßig hellgrau.
-- Einzelansichten der KI-/Vergleichsmodelle werden bereits an der experimentellen Referenz ausgerichtet.
-- Neues Colab-Hilfsnotebook:
-  - `colab/cif_to_pdb_converter.ipynb`
-  - konvertiert CIF/mmCIF-Dateien nach PDB mit Gemmi.
-
-## Calmodulin-Strukturdateien
-
-```text
-structures/calmodulin/
-├── experimental_ca_bound.pdb
-├── af2_best.pdb
-├── af2_alternative.pdb
-├── af2_alphafold_db.pdb
-├── af3_ca_model.pdb
-└── didactic_decoy.pdb        # optional
-```
-
-## Didaktisches Störmodell
-
-Für Calmodulin ist ein didaktisches Störmodell optional. Es sollte nicht völlig willkürlich sein, sondern noch proteinartig wirken und z. B. eine andere Domänenorientierung oder stärker verschobene End-/Linkerbereiche zeigen.
-
-Geeignete Quellen:
-- stärker abweichendes QUARK-Modell
-- stärker abweichendes Phyre2-Modell
-- anderes transparent dokumentiertes Vergleichsmodell
-
-Wenn ColabFold/AF2, AlphaFold-DB und AF3 mit Ca²⁺ bereits genügend Kontrast liefern, kann `didactic_decoy.pdb` auch weggelassen werden.
+- Didaktische Konsolidierung direkt in der App:
+  - Tabelle **Modelltypen richtig lesen**
+  - Aufgabenmodus mit drei Schritten:
+    1. Beobachte
+    2. Vergleiche
+    3. Formuliere die Modellgrenze
+- Aufgaben sind pro Beispiel datengetrieben in `data/examples.json` hinterlegt.
+- Protokolltext übernimmt den Aufgabenmodus.
+- Begleitkurs-Seite ergänzt:
+  - `begleitkurs/strukturmodell_lab.md`
 
 ## Update
 
-Für ein Update auf v0.5.2 mindestens ersetzen:
+Für ein Update auf v0.6.0 mindestens ersetzen:
 
 ```text
 index.html
@@ -49,8 +25,18 @@ app.js
 style.css
 data/examples.json
 README.md
-colab/colabfold_template.ipynb
-colab/cif_to_pdb_converter.ipynb
 ```
 
-Den Ordner `structures/` nicht mit einem leeren Ordner überschreiben, wenn dort bereits PDB-Dateien liegen.
+Zusätzlich neu kopieren:
+
+```text
+begleitkurs/strukturmodell_lab.md
+```
+
+Der Ordner `structures/` soll nicht überschrieben werden, wenn dort bereits PDB-Dateien liegen.
+
+## Didaktische Linie
+
+- Trp-cage: kleine Peptide und Modellvariation
+- Ubiquitin: stabile Proteine und starke KI-Vorhersagen
+- Calmodulin: Zustand, Calcium-Kontext und Grenzen eines einzelnen Strukturmodells

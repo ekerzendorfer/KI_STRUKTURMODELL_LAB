@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.5.2
+/* KI-Strukturmodell-Labor v0.6.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.5.2: Calmodulin-Interpretation, heller Standardhintergrund und CIF-Konverter. */
+   v0.6.0: didaktische Konsolidierung und Aufgabenmodus. */
 
-const APP_VERSION = "0.5.2";
+const APP_VERSION = "0.6.0";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -28,6 +28,9 @@ const els = {
   expandViewerBtn: document.getElementById("expandViewerBtn"),
   questions: document.getElementById("questions"),
   takeaway: document.getElementById("takeaway"),
+  taskObserve: document.getElementById("taskObserve"),
+  taskCompare: document.getElementById("taskCompare"),
+  taskLimit: document.getElementById("taskLimit"),
   showPrediction: document.getElementById("showPrediction"),
   showExperiment: document.getElementById("showExperiment"),
   showDifferenceResidues: document.getElementById("showDifferenceResidues"),
@@ -131,6 +134,7 @@ function selectExample(id) {
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
   renderExampleInfo(currentExample);
   renderQuestions(currentExample);
+  renderTasks(currentExample);
   renderGuidance(currentExample);
   renderPredictionSelector(currentExample);
   if (els.showHetero) els.showHetero.checked = !!currentExample.showHeteroDefault;
@@ -166,6 +170,13 @@ function renderQuestions(ex) {
   els.takeaway.textContent = ex.takeaway || "";
 }
 
+function renderTasks(ex) {
+  const tasks = ex.tasks || {};
+  if (els.taskObserve) els.taskObserve.textContent = tasks.observe || "Beschreibe zuerst die sichtbare Gesamtform, ohne sofort zu bewerten.";
+  if (els.taskCompare) els.taskCompare.textContent = tasks.compare || "Vergleiche Experiment und Modell im Overlay und suche die auffälligsten Abweichungen.";
+  if (els.taskLimit) els.taskLimit.textContent = tasks.limit || "Formuliere, welche Modellgrenze dieses Beispiel sichtbar macht.";
+}
+
 function renderGuidance(ex) {
   if (!els.observationPrompts || !els.modelLimit) return;
   els.observationPrompts.innerHTML = "";
@@ -192,6 +203,12 @@ function generateProtocolText() {
     differences: "Unterschiede"
   }[currentView] || currentView;
   const prompts = (currentExample.observation_prompts || []).map((p, i) => `${i + 1}. ${p}`).join("\n");
+  const tasks = currentExample.tasks || {};
+  const taskText = [
+    tasks.observe ? `1. Beobachte: ${tasks.observe}` : null,
+    tasks.compare ? `2. Vergleiche: ${tasks.compare}` : null,
+    tasks.limit ? `3. Modellgrenze: ${tasks.limit}` : null
+  ].filter(Boolean).join("\n");
   const questions = (currentExample.questions || []).map((q, i) => `${i + 1}. ${q}`).join("\n");
   const alignment = lastAlignmentStats
     ? `\nÜberlagerung: ${lastAlignmentStats.pairCount} gemeinsame Cα-Paare; RMSD ca. ${lastAlignmentStats.rmsd.toFixed(2)} Å.\nAuffällige Bereiche: ${lastDiffResidues.length ? lastDiffResidues.join(", ") : "keine oberhalb der eingestellten Schwelle"}.`
@@ -202,7 +219,7 @@ function generateProtocolText() {
   const selectedPredKind = selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell";
   const selectedPredLine = selectedPred ? `\n${selectedPredKind}: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
 
-  els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}${currentExample.model_limit ? "\nModellgrenze: " + currentExample.model_limit + "\n" : ""}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
+  els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}${currentExample.model_limit ? "\nModellgrenze: " + currentExample.model_limit + "\n" : ""}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nAufgabenmodus:\n${taskText || "keine Aufgaben hinterlegt"}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
 }
 
 async function copyProtocolText() {

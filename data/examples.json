@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.5.2",
-    "description": "Version 0.5.2 schärft die Calmodulin-Didaktik, stellt den Viewer-Hintergrund standardmäßig auf hell, richtet Einzelansichten von KI-/Vergleichsmodellen bereits an der experimentellen Referenz aus und ergänzt ein Colab-Notebook zur CIF→PDB-Konvertierung.",
+    "version": "0.6.0",
+    "description": "Version 0.6.0 konsolidiert die Didaktik: Modelltypen-Tabelle, Aufgabenmodus und Begleitkurs-Seite.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -119,7 +119,12 @@
       "model_limit": "Trp-cage ist sehr klein und wurde experimentell als NMR-Ensemble bestimmt. Das aktuell angezeigte Modell ist daher nur ein Vertreter eines beweglichen Strukturensembles, nicht die eine endgültige Peptidform.",
       "protocol_focus": "Mini-Protein: Experiment und KI-Modell werden lokal vergleichbar; das selbst erzeugte ColabFold-Modell kann später importiert werden.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
-      "differenceThreshold": 2.0
+      "differenceThreshold": 2.0,
+      "tasks": {
+        "observe": "Betrachte Experiment, ColabFold-Modell und didaktisches Störmodell. Beschreibe zuerst nur die Gesamtform: kompakt, aufgeklappt, ähnlich oder deutlich anders?",
+        "compare": "Schalte auf Overlay/Unterschiede. Welche Abschnitte weichen besonders stark ab? Prüfe, ob diese Abweichungen bei einem kleinen, flexiblen Peptid plausibel wirken.",
+        "limit": "Formuliere eine Modellgrenze: Warum ist ein einzelnes Modell bei einem kleinen Peptid nur eine Momentaufnahme oder ein Strukturvorschlag?"
+      }
     },
     {
       "id": "ubiquitin",
@@ -237,7 +242,12 @@
       ],
       "model_limit": "Ubiquitin ist ein sehr stabiles Referenzprotein. Eine KI-Vorhersage kann die Grundfaltung sehr gut treffen; experimentelle Strukturen liefern aber weiterhin Messdetails, flexible Bereiche, Lösungsmittel-/Kristallinformationen und konkrete Zustände.",
       "protocol_focus": "Referenzprotein: lokaler Standardvergleich Experiment vs. ColabFold-Modell; eigenes ColabFold-Ergebnis kann zusätzlich importiert werden.",
-      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb"
+      "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
+      "tasks": {
+        "observe": "Vergleiche Experiment und bestes ColabFold-Modell. Achte darauf, wie stark Grundfaltung, Helix und β-Faltblatt übereinstimmen.",
+        "compare": "Wechsle zum Vergleichsmodell oder Decoy. Ist das alternative Modell wirklich schlechter, oder zeigt es nur kleine Modellvariationen?",
+        "limit": "Formuliere eine Modellgrenze: Was sagt ein sehr gutes Overlay über die Modellqualität aus – und was sagt es noch nicht über Funktion, Dynamik oder Wechselwirkungen aus?"
+      }
     },
     {
       "id": "calmodulin",
@@ -407,7 +417,12 @@
       "model_limit": "Die Modellgrenze ist hier nicht nur Genauigkeit. Entscheidend ist der biologische Kontext: Calcium-Ionen, flexible Enden, Domänenorientierung und experimenteller Zustand beeinflussen den Vergleich.",
       "protocol_focus": "Vergleiche die vier Modelltypen und erkläre, warum AF3 mit Ca²⁺ trotz besserem Kontext nicht automatisch identisch mit der experimentellen Struktur sein muss.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
-      "differenceThreshold": 3.0
+      "differenceThreshold": 3.0,
+      "tasks": {
+        "observe": "Schalte Ionen/Liganden ein und lokalisiere die vier Ca²⁺-Ionen. Vergleiche dann 1CLL, AF2/ColabFold, AlphaFold-DB und AF3 mit Ca²⁺.",
+        "compare": "Prüfe, ob AF3 mit Ca²⁺ dem experimentellen Ca²⁺-gebundenen Zustand näherkommt. Achte besonders auf N-Terminus, Linker und Domänenorientierung.",
+        "limit": "Formuliere eine Modellgrenze: Warum ist Calmodulin kein einfacher Fall von „richtig oder falsch“, sondern ein Beispiel für Zustand, Kontext und Flexibilität?"
+      }
     }
   ]
 }

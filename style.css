@@ -401,3 +401,91 @@ body.viewer-expanded-active {
 .viewer-panel.viewer-expanded .model-interpretation {
   background: rgba(255, 255, 255, 0.9);
 }
+
+
+.helper-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.helper-link-row a {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.helper-link-row a:hover {
+  text-decoration: underline;
+}
+
+
+.didactic-panel {
+  border-top: 5px solid var(--accent);
+}
+
+.model-type-grid,
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.model-type-grid article,
+.task-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 13px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.model-type-grid h3,
+.task-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.model-type-grid p,
+.task-card p {
+  margin: 6px 0;
+  line-height: 1.45;
+}
+
+.task-grid {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+}
+
+.task-card {
+  position: relative;
+}
+
+.task-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: inline-grid;
+  place-items: center;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1100px) {
+  .model-type-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .model-type-grid,
+  .task-grid {
+    grid-template-columns: 1fr;
+  }
+}

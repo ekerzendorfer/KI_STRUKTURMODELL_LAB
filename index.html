@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.5.2</title>
-  <link rel="stylesheet" href="style.css?v=0.5.2" />
+  <title>KI-Strukturmodell-Labor v0.6.0</title>
+  <link rel="stylesheet" href="style.css?v=0.6.0" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
 </head>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.5.2 · Calmodulin-Interpretation & CIF→PDB-Colab</p>
+      <p class="version">Version 0.6.0 · didaktische Konsolidierung & Aufgabenmodus</p>
     </div>
   </header>
 
@@ -25,6 +25,41 @@
         Dieses Tool vergleicht KI-Strukturmodelle mit experimentell bestimmten Proteinstrukturen. Es soll AlphaFold/ColabFold nicht abwerten, sondern zeigen, wie stark solche Modelle sind – und warum experimentelle Strukturen, Zustände, Liganden/Ionen und Beweglichkeit weiterhin wichtig bleiben.
       </p>
       <div class="principle">Beobachten · Vergleichen · Überlagern · Modellgrenzen formulieren</div>
+    </section>
+
+
+    <section class="panel didactic-panel">
+      <h2>Modelltypen richtig lesen</h2>
+      <p class="soft-note">
+        Die Modelle sind keine Rangliste von „wahr“ bis „falsch“. Sie beantworten unterschiedliche Fragen mit unterschiedlichem Kontext.
+      </p>
+      <div class="model-type-grid" aria-label="Modelltypen im Strukturmodell-Labor">
+        <article>
+          <h3>Experiment</h3>
+          <p><strong>Zeigt:</strong> eine real gemessene Struktur unter konkreten Bedingungen.</p>
+          <p><strong>Grenze:</strong> oft nur ein Zustand; flexible Bereiche können fehlen oder unscharf sein.</p>
+        </article>
+        <article>
+          <h3>ColabFold / AF2</h3>
+          <p><strong>Zeigt:</strong> ein sehr starkes Sequenzmodell der Faltung.</p>
+          <p><strong>Grenze:</strong> keine explizit gesetzten Ionen, Liganden oder Zustände.</p>
+        </article>
+        <article>
+          <h3>AlphaFold-DB</h3>
+          <p><strong>Zeigt:</strong> ein öffentliches Referenzmodell aus der AlphaFold-Datenbank.</p>
+          <p><strong>Grenze:</strong> ebenfalls kein experimenteller Zustand und keine zusätzlichen Cofaktoren.</p>
+        </article>
+        <article>
+          <h3>AF3 mit Kontext</h3>
+          <p><strong>Zeigt:</strong> ein Modell mit zusätzlich angegebenen Molekülen, z. B. Ca²⁺.</p>
+          <p><strong>Grenze:</strong> mehr Kontext bedeutet nicht automatisch Identität mit dem Experiment.</p>
+        </article>
+        <article>
+          <h3>Didaktisches Störmodell</h3>
+          <p><strong>Zeigt:</strong> bewusst stärkere Abweichungen, um Beobachtung zu üben.</p>
+          <p><strong>Grenze:</strong> kein AlphaFold-Ergebnis; muss klar gekennzeichnet bleiben.</p>
+        </article>
+      </div>
     </section>
 
     <section class="panel">
@@ -95,6 +130,11 @@
         <button id="clearUploadBtn" class="secondary" type="button">Upload entfernen</button>
       </div>
 
+      <div class="helper-link-row">
+        <span>AF3-Datei im CIF/mmCIF-Format?</span>
+        <a href="https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/cif_to_pdb_converter.ipynb" target="_blank" rel="noopener">CIF→PDB-Konverter öffnen</a>
+      </div>
+
       <div class="viewer-legend" aria-label="Legende zum Strukturvergleich">
         <strong>Legende:</strong>
         <span class="legend-item"><span class="legend-swatch exp"></span>Experiment</span>
@@ -110,7 +150,29 @@
     </section>
 
     <section class="panel questions-panel">
-      <h2>4. Drei Leitfragen</h2>
+      <h2>4. Aufgabenmodus</h2>
+      <p class="soft-note">
+        Drei kleine Schritte reichen: erst beobachten, dann vergleichen, dann eine Modellgrenze formulieren.
+      </p>
+      <div class="task-grid" aria-label="Aufgabenmodus">
+        <article class="task-card">
+          <div class="task-badge">1</div>
+          <h3>Beobachte</h3>
+          <p id="taskObserve">Wähle ein Beispiel aus.</p>
+        </article>
+        <article class="task-card">
+          <div class="task-badge">2</div>
+          <h3>Vergleiche</h3>
+          <p id="taskCompare">Wähle ein Beispiel aus.</p>
+        </article>
+        <article class="task-card">
+          <div class="task-badge">3</div>
+          <h3>Formuliere die Modellgrenze</h3>
+          <p id="taskLimit">Wähle ein Beispiel aus.</p>
+        </article>
+      </div>
+
+      <h3>Drei Leitfragen</h3>
       <ol id="questions">
         <li>Was stimmt gut überein?</li>
         <li>Wo gibt es deutliche Unterschiede?</li>
@@ -119,7 +181,7 @@
       <div id="takeaway" class="takeaway"></div>
     </section>
 
-    <section class="panel protocol-panel">
+<section class="panel protocol-panel">
       <h2>5. Beobachtung & Protokoll</h2>
       <p class="soft-note">
         Der Protokolltext ist keine automatische Auswertung. Er ist eine kopierbare Strukturhilfe für Heft, Lernplattform oder Unterrichtsgespräch.
@@ -138,10 +200,10 @@
 
   <footer class="wrap footer">
     <p>
-      v0.5.2 schärft die Calmodulin-Erklärung, richtet Einzelansichten der KI-/Vergleichsmodelle bereits an der experimentellen Referenz aus und ergänzt ein Colab-Notebook zur CIF→PDB-Konvertierung.
+      v0.6.0 konsolidiert die Didaktik: Modelltypen-Tabelle, Aufgabenmodus und Begleitkurs-Seite. Das Tool bleibt technisch bewusst schlank.
     </p>
   </footer>
 
-  <script src="app.js?v=0.5.2"></script>
+  <script src="app.js?v=0.6.0"></script>
 </body>
 </html>
