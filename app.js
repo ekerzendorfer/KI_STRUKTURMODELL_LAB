@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.5.0
+/* KI-Strukturmodell-Labor v0.5.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.5.0: Calmodulin als Ca²⁺-gebundenes Zustandsbeispiel. */
+   v0.5.1: Calmodulin mit AFDB- und AF3-Slots. */
 
-const APP_VERSION = "0.5.0";
+const APP_VERSION = "0.5.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -271,6 +271,10 @@ function updatePredictionModelNote() {
     els.predictionModelNote.textContent = "Standard: bestbewertetes ColabFold-Modell.";
   } else if (variant === "alternative") {
     els.predictionModelNote.textContent = "Vergleichsmodell: niedriger bewertetes ColabFold-Modell zur Diskussion von Modellqualität.";
+  } else if (variant === "afdb") {
+    els.predictionModelNote.textContent = "AlphaFold-DB-Modell: öffentliches AF2-Modell P0DP23; lokal als af2_alphafold_db.pdb ablegen.";
+  } else if (variant === "af3_ca") {
+    els.predictionModelNote.textContent = "AF3 mit Ca²⁺: vorbereiteter optionaler Slot für ein späteres AlphaFold-Server-Modell.";
   } else if (variant === "decoy") {
     els.predictionModelNote.textContent = "Didaktisches Störmodell: kein AlphaFold/ColabFold-Ergebnis; optional, falls didactic_decoy.pdb hinterlegt ist.";
   } else {
@@ -352,6 +356,10 @@ async function loadCurrentExample(force = false) {
       statusLines.push(`${predKind} geladen: ${predLabel} (${predStruct.color || "#EF6C00"}).`);
       if (predVariant === "decoy") {
         statusLines.push("Hinweis: Dieses Modell ist nicht als AlphaFold/ColabFold-Ergebnis gekennzeichnet, sondern dient als didaktisches Vergleichsmodell.");
+      } else if (predVariant === "afdb") {
+        statusLines.push("Hinweis: AlphaFold-DB P0DP23 enthält ein zusätzliches Start-Methionin; für den Vergleich mit 1CLL wird es in der App ausgeblendet und die Residuen werden umnummeriert.");
+      } else if (predVariant === "af3_ca") {
+        statusLines.push("Hinweis: Dieser Slot ist für ein späteres AF3-Modell mit expliziten Calcium-Ionen vorbereitet.");
       }
     } catch (err) {
       const predVariant = predStruct.variant || predStruct.id;
@@ -599,6 +607,9 @@ function preprocessPdb(pdb, struct) {
   if (struct.residueRange) {
     lines = filterResidueRange(lines, struct.residueRange[0], struct.residueRange[1]);
   }
+  if (Number.isFinite(struct.residueNumberOffset) && struct.residueNumberOffset !== 0) {
+    lines = shiftResidueNumbers(lines, struct.residueNumberOffset);
+  }
 
   // Kristallwasser stört in diesem didaktischen Viewer meist mehr, als es hilft.
   // Es erscheint sonst als viele einzelne Kugeln im Bändermodell.
@@ -663,6 +674,16 @@ function filterResidueRange(lines, start, end) {
     if (!isAtomLine(line)) return true;
     const resi = parseInt(line.slice(22, 26).trim(), 10);
     return resi >= start && resi <= end;
+  });
+}
+
+function shiftResidueNumbers(lines, offset) {
+  return lines.map(line => {
+    if (!isAtomLine(line)) return line;
+    const resi = parseInt(line.slice(22, 26).trim(), 10);
+    if (!Number.isFinite(resi)) return line;
+    const shifted = String(resi + offset).padStart(4, " ").slice(-4);
+    return line.slice(0, 22) + shifted + line.slice(26);
   });
 }
 

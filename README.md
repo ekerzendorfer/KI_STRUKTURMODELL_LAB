@@ -1,50 +1,51 @@
-# KI-Strukturmodell-Labor v0.5.0
+# KI-Strukturmodell-Labor v0.5.1
 
 Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
 
-## Neu in v0.5.0
+## Neu in v0.5.1
 
-- Drittes Beispiel ergänzt: **Calmodulin**.
-- Didaktischer Schwerpunkt: **Sequenzmodell vs. Ca²⁺-gebundener experimenteller Zustand**.
-- Lokale experimentelle Calmodulin-Datei erwartet unter `structures/calmodulin/experimental_ca_bound.pdb`.
-- Calcium-Ionen bleiben bei Calmodulin sichtbar, wenn **Ionen/Liganden anzeigen** aktiviert ist.
-- Wasser und Ethanol aus 1CLL werden herausgefiltert; Calcium-Ionen bleiben erhalten.
-- ColabFold-Workflow enthält nun auch die Calmodulin-Sequenz.
-- Optionale KI-/Vergleichsmodelle bleiben wie in v0.4.1 erhalten.
+- Calmodulin erhält zwei optionale zusätzliche Vergleichspartner:
+  - **AlphaFold-DB P0DP23** (`af2_alphafold_db.pdb`)
+  - **AF3 mit Ca²⁺** (`af3_ca_model.pdb`, vorbereitet für später)
+- Fehlende Dateien erzeugen nur Hinweise; die vorhandenen Modelle bleiben nutzbar.
+- Für das AlphaFold-DB-Modell wird Residuum 1, das zusätzliche Start-Methionin der UniProt-Sequenz, ausgeblendet.
+- Danach wird die Residuen-Nummerierung um -1 verschoben, damit der Vergleich mit der 1CLL-Referenz sinnvoll bleibt.
 
-## Erwartete Strukturdateien
+## AlphaFold-DB-Modell für Calmodulin
+
+Download:
 
 ```text
-structures/
-├── trp_cage/
-│   ├── experimental.pdb
-│   ├── af2_best.pdb
-│   ├── af2_alternative.pdb
-│   └── didactic_decoy.pdb        # optional
-├── ubiquitin/
-│   ├── experimental.pdb
-│   ├── af2_best.pdb
-│   ├── af2_alternative.pdb
-│   └── didactic_decoy.pdb        # optional
-└── calmodulin/
-    ├── experimental_ca_bound.pdb
-    ├── af2_best.pdb
-    ├── af2_alternative.pdb
-    └── didactic_decoy.pdb        # optional
+https://alphafold.ebi.ac.uk/files/AF-P0DP23-F1-model_v4.pdb
 ```
 
-## Calmodulin-Sequenz für ColabFold
-
-Für den Vergleich mit 1CLL wird die 148-AS-Sequenz ohne zusätzliches N-terminales Methionin verwendet:
+Speichern als:
 
 ```text
->calmodulin_1CLL_reference
-ADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK
+structures/calmodulin/af2_alphafold_db.pdb
+```
+
+AlphaFold-DB-Eintrag:
+
+```text
+https://alphafold.ebi.ac.uk/entry/P0DP23
+```
+
+## Erwartete Strukturdateien für Calmodulin
+
+```text
+structures/calmodulin/
+├── experimental_ca_bound.pdb
+├── af2_best.pdb
+├── af2_alternative.pdb
+├── af2_alphafold_db.pdb      # optional, öffentliches AFDB-Modell P0DP23
+├── didactic_decoy.pdb        # optional
+└── af3_ca_model.pdb          # optional, späterer AF3-Server-Lauf mit Ca²⁺
 ```
 
 ## Update
 
-Für ein Update auf v0.5.0 mindestens ersetzen:
+Für ein Update auf v0.5.1 mindestens ersetzen:
 
 ```text
 index.html
