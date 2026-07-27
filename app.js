@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.7
+/* KI-Strukturmodell-Labor v0.7.9
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.7: MBP-Bindetasche mit sichtbaren Markern und RCSB-Fallback. */
+   v0.7.9: MBP-HETATM-Rettung aus Roh-PDB. */
 
-const APP_VERSION = "0.7.7";
+const APP_VERSION = "0.7.9";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -427,6 +427,44 @@ function updateCheckboxesForView() {
   }
 }
 
+function ensureBindingLigandPresent(pdb, statusLines = []) {
+  if (!currentExample?.bindingSite?.enabled) return pdb;
+  const cfg = currentExample.bindingSite || {};
+  const ligandAtoms = getLigandAtoms(pdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+  if (ligandAtoms.length) return pdb;
+
+  const fallback = String(cfg.fallbackLigandPdb || "").trim();
+  if (!fallback) return pdb;
+
+  statusLines.push("Lokale geschlossene 1ANF-Datei enthält keinen HETATM-Liganden; eingebettete Maltose-Koordinaten aus RCSB 1ANF wurden ergänzt.");
+  return `${pdb.replace(/\s*END\s*$/m, "").trim()}\n${fallback}\n`;
+}
+
+function rescueLigandFromRawPdb(processedPdb, rawPdb, statusLines = []) {
+  if (!currentExample?.bindingSite?.enabled) return processedPdb;
+
+  const cfg = currentExample.bindingSite || {};
+  if (!cfg.rescueLigandFromRawPdb) return processedPdb;
+
+  const processedLigands = getLigandAtoms(processedPdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+  if (processedLigands.length) {
+    statusLines.push(`Ligandendiagnose: ${processedLigands.length} HETATM-Atome nach Vorverarbeitung vorhanden.`);
+    return processedPdb;
+  }
+
+  const rawLigands = getLigandAtoms(rawPdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+  const rawNames = Array.from(new Set(parseAtoms(rawPdb).filter(a => a.line.trimStart().startsWith("HETATM")).map(a => a.resn))).sort();
+
+  if (!rawLigands.length) {
+    statusLines.push(`Ligandendiagnose: Rohdatei enthält keine nutzbaren HETATM-Liganden. HETATM-Namen roh: ${rawNames.length ? rawNames.join(", ") : "keine"}.`);
+    return processedPdb;
+  }
+
+  const rescuePdb = pdbFromAtomLines(rawLigands.map(a => a.line), "rescued ligand from raw PDB");
+  statusLines.push(`Ligandendiagnose: ${rawLigands.length} HETATM-Atome aus der Roh-PDB übernommen (${Array.from(new Set(rawLigands.map(a => a.resn))).join("/")}).`);
+  return `${processedPdb.replace(/\s*END\s*$/m, "").trim()}\n${rescuePdb}\n`;
+}
+
 async function loadCurrentExample(force = false) {
   if (!currentExample) return;
   if (force && viewer) {
@@ -486,27 +524,12 @@ async function loadCurrentExample(force = false) {
 
   if (els.showPrediction.checked && predStruct) {
     try {
-      predPdb = await loadStructureText(predStruct);
-      predPdb = preprocessPdb(predPdb, predStruct);
+      const predRawPdb = await loadStructureText(predStruct);
+      predPdb = preprocessPdb(predRawPdb, predStruct);
 
       if (currentExample?.bindingSite?.enabled && predStruct.requireLigandForBindingSite) {
-        const cfg = currentExample.bindingSite || {};
-        const localLigands = getLigandAtoms(predPdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
-        if (!localLigands.length && predStruct.url) {
-          try {
-            const remoteRaw = await fetchTextWithFallback([predStruct.url]);
-            const remotePdb = preprocessPdb(remoteRaw, predStruct);
-            const remoteLigands = getLigandAtoms(remotePdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
-            if (remoteLigands.length) {
-              predPdb = remotePdb;
-              statusLines.push("Lokale 1ANF-Datei enthält keinen sichtbaren Liganden; RCSB-Fallback wurde für die Bindetasche verwendet.");
-            } else {
-              warnLines.push("Auch im RCSB-Fallback wurde kein Ligand für die Bindetaschen-Hervorhebung gefunden.");
-            }
-          } catch (fallbackErr) {
-            warnLines.push(`RCSB-Fallback für 1ANF konnte nicht geladen werden: ${fallbackErr.message}`);
-          }
-        }
+        predPdb = rescueLigandFromRawPdb(predPdb, predRawPdb, statusLines);
+        predPdb = ensureBindingLigandPresent(predPdb, statusLines);
       }
 
       const shouldAlignPrediction =
@@ -894,7 +917,7 @@ function shiftResidueNumbers(lines, offset) {
   });
 }
 
-function isAtomLine(line) { return line.startsWith("ATOM") || line.startsWith("HETATM"); }
+function isAtomLine(line) { const s = String(line || "").trimStart(); return s.startsWith("ATOM") || s.startsWith("HETATM"); }
 
 function applyModelStyle(model, struct, role) {
   const color = struct.color || (role === "experiment" ? "#2E7D32" : "#EF6C00");
@@ -1022,7 +1045,7 @@ function getCaCoordsForResidues(pdb, residues) {
 
 function getLigandAtoms(pdb, ligandNames = [], fallbackToAnyHetero = false) {
   const keep = new Set((ligandNames || []).map(x => String(x).trim().toUpperCase()));
-  const allHetero = parseAtoms(pdb).filter(a => a.line.startsWith("HETATM"));
+  const allHetero = parseAtoms(pdb).filter(a => a.line.trimStart().startsWith("HETATM"));
   const selected = allHetero.filter(a => !keep.size || keep.has(a.resn.toUpperCase()));
   if (selected.length || !fallbackToAnyHetero) return selected;
   return allHetero;
@@ -1032,7 +1055,7 @@ function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
   const ligAtoms = getLigandAtoms(pdb, ligandNames, !!currentExample?.bindingSite?.fallbackToAnyHetero);
   if (!ligAtoms.length) return { residues: [], ligandAtoms: [] };
 
-  const proteinAtoms = parseAtoms(pdb).filter(a => a.line.startsWith("ATOM"));
+  const proteinAtoms = parseAtoms(pdb).filter(a => a.line.trimStart().startsWith("ATOM"));
   const resMap = new Map();
 
   for (const p of proteinAtoms) {
@@ -1143,7 +1166,7 @@ function highlightBindingSite() {
   const ligandAtoms = result.ligandAtoms;
 
   const heteroNames = Array.from(new Set(parseAtoms(closed.pdb)
-    .filter(a => a.line.startsWith("HETATM"))
+    .filter(a => a.line.trimStart().startsWith("HETATM"))
     .map(a => a.resn))).sort();
 
   if (!ligandAtoms.length) {

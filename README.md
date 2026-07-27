@@ -1,19 +1,20 @@
-# KI-Strukturmodell-Labor v0.7.7
+# KI-Strukturmodell-Labor v0.7.9
 
-## Neu in v0.7.7
+## Neu in v0.7.9
 
-Robustere und deutlich sichtbare MBP-Bindetaschen-Darstellung:
+Korrektur für korrekte 1ANF-Dateien, bei denen HETATM-Zeilen vorhanden sind, aber in der App dennoch nicht sichtbar wurden:
 
-- großer magenta Marker am Liganden-Zentrum
-- orange Marker für Bindetaschen-Reste im geschlossenen Zustand
-- türkisfarbene Marker für dieselben Reste im offenen Zustand
-- zusätzliche Stick-Darstellung bleibt erhalten
-- falls die lokale 1ANF-Datei keinen Liganden enthält, versucht die App automatisch den RCSB-Fallback
-- das Statusfeld meldet weiterhin den gefundenen Ligandennamen und die Zahl der markierten Reste
+- Für die geschlossene MBP-Datei wird keine Chain-Filterung mehr verwendet.
+- Falls bei der Vorverarbeitung HETATM-Zeilen verloren gehen, übernimmt die App den Liganden direkt aus der **Roh-PDB**.
+- Das Statusfeld zeigt eine Ligandendiagnose:
+  - HETATM nach Vorverarbeitung vorhanden
+  - oder HETATM aus Roh-PDB übernommen
+  - oder HETATM-Namen in der Rohdatei
+- Die eingebettete Maltose-Reserve bleibt nur als letzter Fallback erhalten.
 
 ## Update
 
-Für ein Update auf v0.7.7 ersetzen:
+Für ein Update auf v0.7.9 ersetzen:
 
 ```text
 index.html
