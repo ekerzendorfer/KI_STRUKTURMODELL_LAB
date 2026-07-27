@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.7.3",
-    "description": "Version 0.7.3 ergänzt für MBP die didaktische Hervorhebung von Maltose und Bindetasche.",
+    "version": "0.7.10",
+    "description": "Version 0.7.10 ergänzt eine harte MBP-PDB-Diagnose: Die App zeigt Roh- und verarbeitete HETATM-Zahlen, damit sichtbar wird, welche Datei tatsächlich geladen wird.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -513,24 +513,17 @@
           "file": "structures/mbp/experimental_closed_maltose.pdb",
           "url": "https://files.rcsb.org/download/1ANF.pdb",
           "pdb_id": "1ANF",
-          "chain": "A",
           "alignTo": "experiment",
           "style": "cartoon",
           "color": "#C2410C",
           "visibleByDefault": true,
-          "note": "Maltosegebundene geschlossene experimentelle MBP-Struktur. Maltose wird bei aktivierter Ligandenanzeige sichtbar.",
+          "note": "Maltosegebundene geschlossene MBP-Struktur. Für 1ANF wird keine Chain-Filterung verwendet, damit Protein und Maltose erhalten bleiben.",
           "stripWater": true,
-          "keepHetero": [
-            "MAL",
-            "BMA",
-            "GLC",
-            "MLT",
-            "A2G",
-            "GOL",
-            "SO4"
-          ],
+          "keepHetero": [],
           "stateLabel": "geschlossen / mit Maltose",
-          "statusLabel": "Geschlossener Zustand"
+          "statusLabel": "Geschlossener Zustand",
+          "keepHeteroAcrossChains": true,
+          "requireLigandForBindingSite": true
         }
       ],
       "defaultView": "experiment",
@@ -541,16 +534,26 @@
       "bindingSite": {
         "enabled": true,
         "ligandNames": [
+          "GLC",
           "MAL",
           "BMA",
-          "GLC",
           "MLT",
-          "A2G"
+          "A2G",
+          "BGC",
+          "AGC"
         ],
-        "radius": 4.5,
+        "radius": 5.0,
         "showOnOpenState": true,
-        "labelResidues": true,
-        "note": "Maltose wird farbig hervorgehoben; Aminosäuren in der unmittelbaren Umgebung der Maltose markieren die Bindetasche."
+        "labelResidues": false,
+        "note": "Maltose/Ligand und Bindetasche werden hervorgehoben; HETATM-Zeilen werden bei Bedarf direkt aus der Roh-PDB übernommen.",
+        "fallbackToAnyHetero": true,
+        "separateModels": true,
+        "useVisibleMarkers": true,
+        "fallbackLigandPdb": "REMARK 1ANF maltose / alpha-maltose ligand fallback from RCSB legacy PDB\nHETATM 2862  C1  GLC B   1       8.537  13.141  37.436  1.00 21.20           C\nHETATM 2863  C2  GLC B   1       8.657  12.625  38.866  1.00 18.62           C\nHETATM 2864  C3  GLC B   1       8.946  13.753  39.819  1.00 17.87           C\nHETATM 2865  C4  GLC B   1      10.145  14.523  39.360  1.00 15.69           C\nHETATM 2866  C5  GLC B   1       9.847  15.161  37.965  1.00 18.29           C\nHETATM 2867  C6  GLC B   1      11.109  15.823  37.373  1.00 17.07           C\nHETATM 2868  O1  GLC B   1       7.343  13.747  37.260  1.00 21.49           O\nHETATM 2869  O2  GLC B   1       7.430  12.031  39.245  1.00 21.00           O\nHETATM 2870  O3  GLC B   1       9.253  13.149  41.094  1.00 18.46           O\nHETATM 2871  O4  GLC B   1      10.317  15.675  40.245  1.00 14.98           O\nHETATM 2872  O5  GLC B   1       9.352  14.183  37.085  1.00 18.08           O\nHETATM 2873  O6  GLC B   1      10.583  16.542  36.238  1.00 22.69           O\nHETATM 2874  C1  GLC B   2      11.382  15.596  41.181  1.00 12.81           C\nHETATM 2875  C2  GLC B   2      10.686  16.092  42.464  1.00 15.55           C\nHETATM 2876  C3  GLC B   2      10.252  17.528  42.309  1.00 17.77           C\nHETATM 2877  C4  GLC B   2      11.489  18.365  41.845  1.00 17.34           C\nHETATM 2878  C5  GLC B   2      12.102  17.810  40.577  1.00 13.08           C\nHETATM 2879  C6  GLC B   2      13.422  18.480  40.315  1.00 13.91           C\nHETATM 2880  O2  GLC B   2       9.590  15.233  42.848  1.00 14.15           O\nHETATM 2881  O3  GLC B   2       9.756  18.105  43.528  1.00 16.86           O\nHETATM 2882  O4  GLC B   2      11.136  19.749  41.624  1.00 18.95           O\nHETATM 2883  O5  GLC B   2      12.406  16.420  40.806  1.00 14.08           O\nHETATM 2884  O6  GLC B   2      13.908  18.191  38.931  1.00 14.85           O\nCONECT 2862 2863 2868 2872\nCONECT 2863 2862 2864 2869\nCONECT 2864 2863 2865 2870\nCONECT 2865 2864 2866 2871\nCONECT 2866 2865 2867 2872\nCONECT 2867 2866 2873\nCONECT 2868 2862\nCONECT 2869 2863\nCONECT 2870 2864\nCONECT 2871 2865 2874\nCONECT 2872 2862 2866\nCONECT 2873 2867\nCONECT 2874 2871 2875 2883\nCONECT 2875 2874 2876 2880\nCONECT 2876 2875 2877 2881\nCONECT 2877 2876 2878 2882\nCONECT 2878 2877 2879 2883\nCONECT 2879 2878 2884\nCONECT 2880 2875\nCONECT 2881 2876\nCONECT 2882 2877\nCONECT 2883 2874 2878\nCONECT 2884 2879\nEND\n",
+        "fallbackLigandSource": "RCSB 1ANF legacy PDB, HETATM GLC chain B residues 1–2",
+        "rescueLigandFromRawPdb": true,
+        "diagnostics": true,
+        "forceFallbackIfNoFinalLigand": true
       }
     }
   ]
