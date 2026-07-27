@@ -1,19 +1,14 @@
-# KI-Strukturmodell-Labor v0.7.2
+# KI-Strukturmodell-Labor v0.7.3
 
-## Neu in v0.7.2
+## Neu in v0.7.3
 
-Korrektur der MBP-Bedienung als eigenes experimentelles Zustandspaar:
+Didaktische Erweiterung für das MBP-Beispiel:
 
-- MBP nutzt keine KI-Modell-Dropdown-Logik mehr.
-- Die Schaltflächen heißen bei MBP:
-  - **offen**
-  - **geschlossen**
-  - **offen + geschlossen**
-  - **Unterschiede**
-- Beim Öffnen wird nur die offene Struktur **1OMP** angezeigt.
-- „geschlossen“ zeigt nur die maltosegebundene Struktur **1ANF**.
-- „offen + geschlossen“ überlagert beide experimentellen Zustände.
-- Die geschlossene Struktur wird nicht mehr als KI-/Vergleichsmodell angeboten.
+- **Bindetasche hervorheben** als eigene Option
+- **Maltose** wird in der geschlossenen Form farblich deutlich dargestellt
+- Aminosäuren in der unmittelbaren Umgebung der Maltose markieren die **Bindetasche**
+- dieselben Reste können auch in der **offenen Form** hervorgehoben werden
+- dadurch wird der Übergang **Schlüssel-Schloss → induced fit** wesentlich anschaulicher
 
 ## Erwartete lokale MBP-Dateien
 
@@ -24,7 +19,7 @@ structures/mbp/experimental_closed_maltose.pdb
 
 ## Update
 
-Für ein Update auf v0.7.2 ersetzen:
+Für ein Update auf v0.7.3 ersetzen:
 
 ```text
 index.html
