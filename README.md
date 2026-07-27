@@ -1,12 +1,23 @@
-# KI-Strukturmodell-Labor v0.7.11
+# KI-Strukturmodell-Labor v0.7.12
 
-## Neu in v0.7.11
+## Neu in v0.7.12
 
-- Die **Maltose / der Ligand** wird jetzt in einem **hellblauen Farbton** dargestellt, damit sie sich klarer von den Proteinbändern unterscheidet.
-- Die **Bindetasche im offenen MBP-Zustand** kann jetzt auch in der **Einzelansicht „offen“** gezeigt werden. Dafür werden die analogen Taschenreste aus dem geschlossenen Zustand auf die offene Struktur übertragen.
-- Die ausführliche PDB-Diagnose aus v0.7.10 bleibt erhalten.
+Diese Version repariert den Startfehler aus v0.7.11:
 
-## Dateien zum Ersetzen
+```text
+handleUpload is not defined
+```
+
+Zusätzlich enthält sie die geplanten MBP-Verbesserungen:
+
+- Maltose/Ligand in **hellblau** statt pink/magenta.
+- Bindetasche im geschlossenen Zustand weiterhin orange.
+- Bindetasche im offenen Zustand jetzt auch in der Einzelansicht **offen** markierbar.
+- Die PDB-Diagnose aus v0.7.10 bleibt erhalten.
+
+## Update
+
+Für ein Update auf v0.7.12 ersetzen:
 
 ```text
 index.html
