@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.10
+/* KI-Strukturmodell-Labor v0.7.11
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.10: MBP-PDB-Diagnose. */
+   v0.7.11: MBP offen + Ligandfarben verbessert. */
 
-const APP_VERSION = "0.7.10";
+const APP_VERSION = "0.7.11";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -1189,17 +1189,61 @@ function addPocketCaMarkers(pdb, residueNumbers, color, radius = 0.55, opacity =
   }
 }
 
+function getReferencePocketResidues(cfg, pdb) {
+  const refs = Array.isArray(cfg?.referenceResidues) ? cfg.referenceResidues.map(Number).filter(Number.isFinite) : [];
+  if (!refs.length || !pdb) return [];
+  const atoms = parseAtoms(pdb).filter(a => a.line.trimStart().startsWith("ATOM") && refs.includes(a.resi));
+  const residueMap = new Map();
+  for (const a of atoms) {
+    const key = `${a.chain}|${a.resi}`;
+    if (!residueMap.has(key)) residueMap.set(key, { chain: a.chain, resi: a.resi, resn: a.resn });
+  }
+  return Array.from(residueMap.values()).sort((a,b)=>a.resi-b.resi);
+}
+
 function highlightBindingSite() {
   if (!currentExample?.bindingSite?.enabled || !els.showPocket?.checked) return null;
 
   const cfg = currentExample.bindingSite || {};
   const closed = loadedModels.prediction;
+  const open = loadedModels.experiment;
+  const ligandNames = cfg.ligandNames || [];
+  const radius = Number(cfg.radius || 4.5);
+  const ligandLabelColor = cfg.ligandLabelColor || "#0277BD";
+  const ligandStickColor = cfg.ligandStickColor || "#29B6F6";
+  const ligandSphereColor = cfg.ligandSphereColor || "#81D4FA";
+  const closedPocketColor = cfg.closedPocketColor || "#F9A825";
+  const openPocketColor = cfg.openPocketColor || "#26A69A";
+
+  // Sonderfall: offene Einzelansicht ohne geladenen geschlossenen Zustand.
+  // Dann wird die Bindetasche über fest hinterlegte Referenzreste markiert.
+  if ((!closed?.model || !closed?.pdb) && open?.pdb && cfg.showOnOpenState) {
+    const openPocketResidues = getReferencePocketResidues(cfg, open.pdb);
+    if (!openPocketResidues.length) {
+      return { ok: false, message: "Bindetasche: offener Zustand geladen, aber keine Referenzreste für die offene Form gefunden." };
+    }
+    const openResidueNumbers = openPocketResidues.map(r => r.resi);
+    if (cfg.useVisibleMarkers) {
+      addPocketCaMarkers(open.pdb, openResidueNumbers, openPocketColor, 0.58, 0.78);
+    }
+    const openPocketAtoms = parseAtoms(open.pdb)
+      .filter(a => a.line.startsWith("ATOM") && openResidueNumbers.includes(a.resi));
+    const openPocketPdb = pdbFromAtomLines(openPocketAtoms.map(a => a.line), "MBP open binding pocket residues");
+    if (openPocketPdb) {
+      const openPocketModel = viewer.addModel(openPocketPdb, "pdb");
+      openPocketModel.setStyle({}, { stick: { color: openPocketColor, radius: 0.22, opacity: 0.96 } });
+      loadedModels.bindingPocketOpen = { model: openPocketModel, pdb: openPocketPdb, struct: { label: "Bindetasche offen" } };
+    }
+    return {
+      ok: true,
+      message: `Bindetasche (offene Einzelansicht) hervorgehoben: ${openPocketResidues.length} Referenzreste aus der geschlossenen Form auf 1OMP übertragen.`
+    };
+  }
+
   if (!closed?.model || !closed?.pdb) {
     return { ok: false, message: "Bindetasche: geschlossener Zustand ist nicht geladen. Bitte „geschlossen“ oder „offen + geschlossen“ wählen." };
   }
 
-  const ligandNames = cfg.ligandNames || [];
-  const radius = Number(cfg.radius || 4.5);
   const result = getPocketResiduesNearLigand(closed.pdb, ligandNames, radius);
   const pocketResidues = result.residues;
   const ligandAtoms = result.ligandAtoms;
@@ -1226,22 +1270,20 @@ function highlightBindingSite() {
 
   if (cfg.useVisibleMarkers) {
     const ligandCenter = centroidOfAtoms(ligandAtoms);
-    addSphereMarker(ligandCenter, 2.0, "#C2185B", 0.72);
-    addCentroidLabel(ligandAtoms, "Maltose / Ligand", "#C2185B");
-    addPocketCaMarkers(closed.pdb, residueNumbers, "#F9A825", 0.62, 0.86);
-    if (cfg.showOnOpenState && loadedModels.experiment?.pdb) {
-      addPocketCaMarkers(loadedModels.experiment.pdb, residueNumbers, "#26A69A", 0.56, 0.74);
+    addSphereMarker(ligandCenter, 2.0, ligandLabelColor, 0.72);
+    addCentroidLabel(ligandAtoms, "Maltose / Ligand", ligandLabelColor);
+    addPocketCaMarkers(closed.pdb, residueNumbers, closedPocketColor, 0.62, 0.86);
+    if (cfg.showOnOpenState && open?.pdb) {
+      addPocketCaMarkers(open.pdb, residueNumbers, openPocketColor, 0.56, 0.74);
     }
   }
 
-  // Robuster als addStyle auf dem Hauptmodell: Ligand und Bindetasche werden
-  // als eigene Zusatzmodelle über die Cartoon-Darstellung gelegt.
   const ligandPdb = pdbFromAtomLines(ligandAtoms.map(a => a.line), "MBP ligand");
   if (ligandPdb) {
     const ligandModel = viewer.addModel(ligandPdb, "pdb");
     ligandModel.setStyle({}, {
-      stick: { color: "#C2185B", radius: 0.36, opacity: 1.0 },
-      sphere: { color: "#EC407A", scale: 0.72, opacity: 0.98 }
+      stick: { color: ligandStickColor, radius: 0.36, opacity: 1.0 },
+      sphere: { color: ligandSphereColor, scale: 0.72, opacity: 0.98 }
     });
     loadedModels.bindingLigand = { model: ligandModel, pdb: ligandPdb, struct: { label: "Maltose / Ligand" } };
   }
@@ -1252,19 +1294,19 @@ function highlightBindingSite() {
   if (closedPocketPdb) {
     const closedPocketModel = viewer.addModel(closedPocketPdb, "pdb");
     closedPocketModel.setStyle({}, {
-      stick: { color: "#F9A825", radius: 0.20, opacity: 0.98 }
+      stick: { color: closedPocketColor, radius: 0.20, opacity: 0.98 }
     });
     loadedModels.bindingPocketClosed = { model: closedPocketModel, pdb: closedPocketPdb, struct: { label: "Bindetasche geschlossen" } };
   }
 
-  if (cfg.showOnOpenState && loadedModels.experiment?.pdb) {
-    const openPocketAtoms = parseAtoms(loadedModels.experiment.pdb)
+  if (cfg.showOnOpenState && open?.pdb) {
+    const openPocketAtoms = parseAtoms(open.pdb)
       .filter(a => a.line.startsWith("ATOM") && residueNumbers.includes(a.resi));
     const openPocketPdb = pdbFromAtomLines(openPocketAtoms.map(a => a.line), "MBP open binding pocket residues");
     if (openPocketPdb) {
       const openPocketModel = viewer.addModel(openPocketPdb, "pdb");
       openPocketModel.setStyle({}, {
-        stick: { color: "#26A69A", radius: 0.20, opacity: 0.95 }
+        stick: { color: openPocketColor, radius: 0.20, opacity: 0.95 }
       });
       loadedModels.bindingPocketOpen = { model: openPocketModel, pdb: openPocketPdb, struct: { label: "Bindetasche offen" } };
     }
@@ -1276,142 +1318,6 @@ function highlightBindingSite() {
     ok: true,
     message: `Bindetasche hervorgehoben: ${ligandResnames} (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
   };
-}
-
-
-function handleUpload(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    uploadedPdb = String(reader.result || "");
-    currentView = "overlay";
-    document.querySelectorAll(".viewBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.view === currentView));
-    updateCheckboxesForView();
-    loadCurrentExample();
-  };
-  reader.readAsText(file);
-}
-
-function parseAtoms(pdb) {
-  const atoms = [];
-  const lines = pdb.split(/\r?\n/);
-  for (const line of lines) {
-    if (!isAtomLine(line)) continue;
-    atoms.push({
-      line,
-      atom: line.slice(12, 16).trim(),
-      resn: line.slice(17, 20).trim(),
-      chain: line[21],
-      resi: parseInt(line.slice(22, 26).trim(), 10),
-      x: parseFloat(line.slice(30, 38)),
-      y: parseFloat(line.slice(38, 46)),
-      z: parseFloat(line.slice(46, 54))
-    });
-  }
-  return atoms;
-}
-
-function caMap(pdb) {
-  const map = new Map();
-  for (const a of parseAtoms(pdb)) {
-    if (a.atom === "CA" && Number.isFinite(a.x)) {
-      map.set(a.resi, [a.x, a.y, a.z]);
-    }
-  }
-  return map;
-}
-
-function alignMobileToReference(mobilePdb, refPdb, threshold = 2.0) {
-  const mobileMap = caMap(mobilePdb);
-  const refMap = caMap(refPdb);
-  const pairs = [];
-  for (const [resi, m] of mobileMap.entries()) {
-    if (refMap.has(resi)) pairs.push({ resi, mobile: m, ref: refMap.get(resi) });
-  }
-  if (pairs.length < 4) throw new Error("Zu wenige gemeinsame Cα-Atome für eine Überlagerung.");
-
-  const cm = centroid(pairs.map(p => p.mobile));
-  const cr = centroid(pairs.map(p => p.ref));
-  const H = [[0,0,0],[0,0,0],[0,0,0]];
-  for (const p of pairs) {
-    const a = sub(p.mobile, cm);
-    const b = sub(p.ref, cr);
-    for (let i=0;i<3;i++) for (let j=0;j<3;j++) H[i][j] += a[i] * b[j];
-  }
-  const q = largestQuaternion(H);
-  const R = quatToRot(q);
-
-  const transformed = transformPdb(mobilePdb, R, cm, cr);
-
-  const diffResidues = [];
-  let sumSq = 0;
-  for (const p of pairs) {
-    const tm = add(matVec(R, sub(p.mobile, cm)), cr);
-    const d = dist(tm, p.ref);
-    sumSq += d * d;
-    if (d > threshold) diffResidues.push(p.resi);
-  }
-  const rmsd = Math.sqrt(sumSq / pairs.length);
-
-  return { pdb: transformed, pairCount: pairs.length, diffResidues, rmsd };
-}
-
-function centroid(points) {
-  const c = [0,0,0];
-  for (const p of points) { c[0]+=p[0]; c[1]+=p[1]; c[2]+=p[2]; }
-  return c.map(x => x / points.length);
-}
-function sub(a,b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
-function add(a,b) { return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
-function dist(a,b) { const d=sub(a,b); return Math.hypot(d[0], d[1], d[2]); }
-function matVec(M, v) { return [M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2], M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2], M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]]; }
-
-function largestQuaternion(S) {
-  const [Sxx,Sxy,Sxz] = S[0];
-  const [Syx,Syy,Syz] = S[1];
-  const [Szx,Szy,Szz] = S[2];
-  const K = [
-    [Sxx+Syy+Szz, Syz-Szy,       Szx-Sxz,       Sxy-Syx],
-    [Syz-Szy,       Sxx-Syy-Szz, Sxy+Syx,       Szx+Sxz],
-    [Szx-Sxz,       Sxy+Syx,      -Sxx+Syy-Szz, Syz+Szy],
-    [Sxy-Syx,       Szx+Sxz,       Syz+Szy,     -Sxx-Syy+Szz]
-  ];
-  let q = [1,0,0,0];
-  for (let iter=0; iter<80; iter++) {
-    const nq = [0,0,0,0];
-    for (let i=0;i<4;i++) for (let j=0;j<4;j++) nq[i] += K[i][j]*q[j];
-    const norm = Math.hypot(nq[0],nq[1],nq[2],nq[3]) || 1;
-    q = nq.map(x => x / norm);
-  }
-  return q;
-}
-
-function quatToRot(q) {
-  let [w,x,y,z] = q;
-  const n = Math.hypot(w,x,y,z) || 1;
-  w/=n; x/=n; y/=n; z/=n;
-  return [
-    [1-2*y*y-2*z*z, 2*x*y-2*z*w,   2*x*z+2*y*w],
-    [2*x*y+2*z*w,   1-2*x*x-2*z*z, 2*y*z-2*x*w],
-    [2*x*z-2*y*w,   2*y*z+2*x*w,   1-2*x*x-2*y*y]
-  ];
-}
-
-function transformPdb(pdb, R, cMobile, cRef) {
-  return pdb.split(/\r?\n/).map(line => {
-    if (!isAtomLine(line)) return line;
-    const x = parseFloat(line.slice(30, 38));
-    const y = parseFloat(line.slice(38, 46));
-    const z = parseFloat(line.slice(46, 54));
-    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return line;
-    const p = add(matVec(R, sub([x,y,z], cMobile)), cRef);
-    return line.slice(0,30) + fmtCoord(p[0]) + fmtCoord(p[1]) + fmtCoord(p[2]) + line.slice(54);
-  }).join("\n");
-}
-
-function fmtCoord(x) {
-  return x.toFixed(3).toString().padStart(8, " ");
 }
 
 function setStatus(msg, kind = "") {
