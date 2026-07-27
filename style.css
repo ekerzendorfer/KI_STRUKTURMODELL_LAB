@@ -498,3 +498,16 @@ body.viewer-expanded-active {
 .model-select-row.comparison-mode .model-select-note {
   color: var(--text);
 }
+
+
+.viewer-panel.state-pair-mode .model-select-row {
+  display: none !important;
+}
+
+.viewer-panel.state-pair-mode .controls .viewBtn[data-view="experiment"] {
+  border-color: #2E7D32;
+}
+
+.viewer-panel.state-pair-mode .controls .viewBtn[data-view="prediction"] {
+  border-color: #C2410C;
+}

@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.1
+/* KI-Strukturmodell-Labor v0.7.2
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.1: MBP-Bedienlogik für experimentelles Zustandspaar korrigiert. */
+   v0.7.2: eigene MBP-Zustandspaar-Bedienung. */
 
-const APP_VERSION = "0.7.1";
+const APP_VERSION = "0.7.2";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -38,6 +38,12 @@ const els = {
   viewerBackground: document.getElementById("viewerBackground"),
   representationMode: document.getElementById("representationMode"),
   predictionModelRow: document.getElementById("predictionModelRow"),
+  viewExperimentBtn: document.getElementById("viewExperimentBtn"),
+  viewPredictionBtn: document.getElementById("viewPredictionBtn"),
+  viewOverlayBtn: document.getElementById("viewOverlayBtn"),
+  viewDifferencesBtn: document.getElementById("viewDifferencesBtn"),
+  showExperimentLabel: document.getElementById("showExperimentLabel"),
+  showPredictionLabel: document.getElementById("showPredictionLabel"),
   predictionModelSelect: document.getElementById("predictionModelSelect"),
   predictionModelNote: document.getElementById("predictionModelNote"),
   modelInterpretation: document.getElementById("modelInterpretation"),
@@ -130,6 +136,7 @@ function selectExample(id) {
   currentExample = examplesData.examples.find(e => e.id === id);
   selectedPredictionVariant = getDefaultPredictionVariant(currentExample);
   setCurrentView(currentExample.defaultView || "overlay");
+  updateViewLabels(currentExample);
   uploadedPdb = null;
   els.pdbUpload.value = "";
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
@@ -217,7 +224,7 @@ function generateProtocolText() {
 
   const selectedPred = getSelectedPredictionStruct();
   const selectedPredVariant = selectedPred ? (selectedPred.variant || selectedPred.id) : "";
-  const selectedPredKind = selectedPredVariant === "closed_maltose" ? "Gewählte experimentelle Vergleichsstruktur" : (selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell");
+  const selectedPredKind = selectedPredVariant === "closed_maltose" ? "Gewählter geschlossener Zustand" : (selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell");
   const selectedPredLine = selectedPred ? `\n${selectedPredKind}: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
 
   els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}${currentExample.model_limit ? "\nModellgrenze: " + currentExample.model_limit + "\n" : ""}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nAufgabenmodus:\n${taskText || "keine Aufgaben hinterlegt"}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
@@ -257,6 +264,10 @@ function hasComparisonStructures(ex = currentExample) {
   return !!(ex?.structures || []).some(s => s.role === "comparison" && !s.disabled);
 }
 
+function isStatePairExample(ex = currentExample) {
+  return !!ex?.statePairMode;
+}
+
 function setCurrentView(view) {
   currentView = view;
   document.querySelectorAll(".viewBtn").forEach(btn => {
@@ -264,9 +275,39 @@ function setCurrentView(view) {
   });
 }
 
+function updateViewLabels(ex = currentExample) {
+  const statePair = isStatePairExample(ex);
+  if (els.viewExperimentBtn) els.viewExperimentBtn.textContent = statePair ? "offen" : "Experiment";
+  if (els.viewPredictionBtn) els.viewPredictionBtn.textContent = statePair ? "geschlossen" : "Modell / Vergleich";
+  if (els.viewOverlayBtn) els.viewOverlayBtn.textContent = statePair ? "offen + geschlossen" : "Overlay";
+  if (els.viewDifferencesBtn) els.viewDifferencesBtn.textContent = "Unterschiede";
+
+  if (els.showExperimentLabel) {
+    const input = els.showExperiment;
+    els.showExperimentLabel.textContent = "";
+    els.showExperimentLabel.appendChild(input);
+    els.showExperimentLabel.appendChild(document.createTextNode(statePair ? " offener Zustand anzeigen" : " Experiment anzeigen"));
+  }
+  if (els.showPredictionLabel) {
+    const input = els.showPrediction;
+    els.showPredictionLabel.textContent = "";
+    els.showPredictionLabel.appendChild(input);
+    els.showPredictionLabel.appendChild(document.createTextNode(statePair ? " geschlossenen Zustand anzeigen" : " KI-/Vergleichsmodell anzeigen"));
+  }
+
+  document.querySelector(".viewer-panel")?.classList.toggle("state-pair-mode", statePair);
+}
+
 function renderPredictionSelector(ex = currentExample) {
   const predictions = getPredictionStructures(ex);
   if (!els.predictionModelRow || !els.predictionModelSelect) return;
+
+  if (isStatePairExample(ex)) {
+    els.predictionModelRow.style.display = "none";
+    selectedPredictionVariant = getDefaultPredictionVariant(ex);
+    updatePredictionModelNote();
+    return;
+  }
 
   const label = els.predictionModelRow.querySelector("label strong");
 
@@ -291,9 +332,6 @@ function renderPredictionSelector(ex = currentExample) {
     selectedPredictionVariant = getDefaultPredictionVariant(ex);
   }
   els.predictionModelSelect.value = selectedPredictionVariant;
-
-  // Bei MBP gibt es aktuell nur einen geschlossenen Vergleichszustand.
-  // Das Dropdown bleibt sichtbar, aber gesperrt und wird als Zustandspaar erklärt.
   els.predictionModelSelect.disabled = predictions.length <= 1;
   updatePredictionModelNote();
 }
@@ -333,7 +371,7 @@ function updatePredictionModelNote() {
       "AF3 mit Ca²⁺: hier wird der Cofaktor-Kontext ausdrücklich mitgegeben. " +
       "Gerade deshalb ist der Vergleich mit 1CLL didaktisch interessant: bessere Kontextinformation bedeutet nicht automatisch Identität mit der experimentellen Struktur.";
   } else if (variant === "closed_maltose") {
-    shortNote = "Experimenteller Vergleichszustand: geschlossene MBP-Struktur mit Maltose. Zuerst einzeln ansehen, dann per Overlay vergleichen.";
+    shortNote = "Geschlossener Zustand: 1ANF mit Maltose. Über die Schaltflächen offen · geschlossen · offen + geschlossen vergleichen.";
     interpretation =
       "MBP geschlossen mit Maltose: Dies ist kein KI-Modell, sondern eine zweite experimentelle Struktur. " +
       "Der Vergleich mit der offenen ligandfreien Struktur zeigt die Domänenbewegung: Die Bindetasche schließt sich um Maltose. " +
@@ -350,20 +388,31 @@ function updatePredictionModelNote() {
 }
 
 function updateCheckboxesForView() {
+  if (!currentExample) return;
   const supportsPrediction = !!getSelectedPredictionStruct();
   const supportsExperiment = !!(currentExample?.structures || []).find(s => s.role === "experiment" && !s.disabled);
-  els.showPrediction.disabled = !supportsPrediction && !uploadedPdb;
-  els.showExperiment.disabled = !supportsExperiment;
 
-  if (currentView === "prediction") {
-    els.showPrediction.checked = supportsPrediction || !!uploadedPdb;
-    els.showExperiment.checked = false;
-  } else if (currentView === "experiment") {
-    els.showPrediction.checked = false;
-    els.showExperiment.checked = supportsExperiment;
-  } else if (currentView === "overlay" || currentView === "differences") {
-    els.showPrediction.checked = supportsPrediction || !!uploadedPdb;
-    els.showExperiment.checked = supportsExperiment;
+  if (isStatePairExample(currentExample)) {
+    if (currentView === "experiment") {
+      els.showExperiment.checked = true;
+      els.showPrediction.checked = false;
+    } else if (currentView === "prediction") {
+      els.showExperiment.checked = false;
+      els.showPrediction.checked = true;
+    } else {
+      els.showExperiment.checked = true;
+      els.showPrediction.checked = true;
+    }
+  } else {
+    els.showPrediction.checked = currentView !== "experiment" && supportsPrediction;
+    els.showExperiment.checked = currentView !== "prediction" && supportsExperiment;
+  }
+
+  els.showPrediction.disabled = !supportsPrediction || currentView === "experiment";
+  els.showExperiment.disabled = !supportsExperiment || currentView === "prediction";
+  if (currentView === "overlay" || currentView === "differences") {
+    els.showPrediction.disabled = !supportsPrediction;
+    els.showExperiment.disabled = !supportsExperiment;
   }
 }
 
@@ -395,7 +444,7 @@ async function loadCurrentExample(force = false) {
       const expModel = viewer.addModel(expPdb, "pdb");
       applyModelStyle(expModel, expStruct, "experiment");
       loadedModels.experiment = { model: expModel, pdb: expPdb, struct: expStruct };
-      statusLines.push(`Experiment geladen: ${expStruct.label} (grün).`);
+      statusLines.push(`${isStatePairExample(currentExample) ? (expStruct.statusLabel || "Offener Zustand") : "Experiment"} geladen: ${expStruct.label} (grün).`);
       if (currentExample.hetero_note && els.showHetero?.checked) statusLines.push(currentExample.hetero_note);
     } catch (err) {
       warnLines.push(`Experiment nicht geladen: ${err.message}`);
@@ -434,7 +483,7 @@ async function loadCurrentExample(force = false) {
       const predVariant = predStruct.variant || predStruct.id;
       const predKind =
         predVariant === "decoy" ? "Didaktisches Störmodell" :
-        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Experimentelle Vergleichsstruktur" :
+        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Geschlossener Zustand" :
         "KI-Modell";
       statusLines.push(`${predKind} geladen: ${predLabel} (${predStruct.color || "#EF6C00"}).`);
       if (predVariant === "decoy") {
@@ -450,7 +499,7 @@ async function loadCurrentExample(force = false) {
       const predVariant = predStruct.variant || predStruct.id;
       const predKind =
         predVariant === "decoy" ? "Didaktisches Störmodell" :
-        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Experimentelle Vergleichsstruktur" :
+        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Geschlossener Zustand" :
         "KI-Modell";
       warnLines.push(`${predKind} nicht geladen: ${err.message}`);
       if (predStruct.note) warnLines.push(predStruct.note);

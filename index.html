@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.7.1</title>
-  <link rel="stylesheet" href="style.css?v=0.7.1" />
+  <title>KI-Strukturmodell-Labor v0.7.2</title>
+  <link rel="stylesheet" href="style.css?v=0.7.2" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
 </head>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.7.1 · MBP-Bedienlogik korrigiert</p>
+      <p class="version">Version 0.7.2 · eigene MBP-Zustandspaar-Bedienung</p>
     </div>
   </header>
 
@@ -90,15 +90,15 @@
       </div>
 
       <div class="controls" role="group" aria-label="Ansicht wählen">
-        <button class="viewBtn" data-view="prediction" type="button">Modell / Vergleich</button>
-        <button class="viewBtn" data-view="experiment" type="button">Experiment</button>
-        <button class="viewBtn active" data-view="overlay" type="button">Overlay</button>
-        <button class="viewBtn" data-view="differences" type="button">Unterschiede</button>
+        <button id="viewPredictionBtn" class="viewBtn" data-view="prediction" type="button">Modell / Vergleich</button>
+        <button id="viewExperimentBtn" class="viewBtn" data-view="experiment" type="button">Experiment</button>
+        <button id="viewOverlayBtn" class="viewBtn active" data-view="overlay" type="button">Overlay</button>
+        <button id="viewDifferencesBtn" class="viewBtn" data-view="differences" type="button">Unterschiede</button>
       </div>
 
       <div class="options">
-        <label><input id="showPrediction" type="checkbox" checked /> KI-/Vergleichsmodell anzeigen</label>
-        <label><input id="showExperiment" type="checkbox" checked /> Experiment anzeigen</label>
+        <label id="showPredictionLabel"><input id="showPrediction" type="checkbox" checked /> KI-/Vergleichsmodell anzeigen</label>
+        <label id="showExperimentLabel"><input id="showExperiment" type="checkbox" checked /> Experiment anzeigen</label>
         <label><input id="showDifferenceResidues" type="checkbox" checked /> abweichende Bereiche hervorheben</label>
         <label><input id="showHetero" type="checkbox" /> Ionen/Liganden anzeigen</label>
       </div>
@@ -205,10 +205,10 @@
 
   <footer class="wrap footer">
     <p>
-      v0.7.1 korrigiert die MBP-Bedienlogik: zuerst offene Struktur, dann geschlossener Vergleichszustand, erst danach Overlay.
+      v0.7.2 führt für MBP eine eigene Zustandspaar-Bedienung ein: offen · geschlossen · Overlay · Unterschiede.
     </p>
   </footer>
 
-  <script src="app.js?v=0.7.1"></script>
+  <script src="app.js?v=0.7.2"></script>
 </body>
 </html>

@@ -1,14 +1,19 @@
-# KI-Strukturmodell-Labor v0.7.1
+# KI-Strukturmodell-Labor v0.7.2
 
-## Neu in v0.7.1
+## Neu in v0.7.2
 
-Kleine Korrektur zur MBP-Bedienlogik:
+Korrektur der MBP-Bedienung als eigenes experimentelles Zustandspaar:
 
-- Beim Öffnen von MBP wird zunächst nur die offene ligandfreie Struktur **1OMP** angezeigt.
-- Die geschlossene maltosegebundene Struktur **1ANF** wird als **experimenteller Vergleichszustand** geführt.
-- Das Dropdown bleibt bei MBP sichtbar, aber gesperrt, weil es derzeit nur einen geschlossenen Vergleichszustand gibt.
-- Overlay/Unterschiede werden erst aktiv genutzt, wenn man bewusst auf die Vergleichsansicht umschaltet.
-- Die Beschriftung vermeidet stärker den Eindruck, dass 1ANF ein KI-Modell sei.
+- MBP nutzt keine KI-Modell-Dropdown-Logik mehr.
+- Die Schaltflächen heißen bei MBP:
+  - **offen**
+  - **geschlossen**
+  - **offen + geschlossen**
+  - **Unterschiede**
+- Beim Öffnen wird nur die offene Struktur **1OMP** angezeigt.
+- „geschlossen“ zeigt nur die maltosegebundene Struktur **1ANF**.
+- „offen + geschlossen“ überlagert beide experimentellen Zustände.
+- Die geschlossene Struktur wird nicht mehr als KI-/Vergleichsmodell angeboten.
 
 ## Erwartete lokale MBP-Dateien
 
@@ -19,7 +24,7 @@ structures/mbp/experimental_closed_maltose.pdb
 
 ## Update
 
-Für ein Update auf v0.7.1 ersetzen:
+Für ein Update auf v0.7.2 ersetzen:
 
 ```text
 index.html
