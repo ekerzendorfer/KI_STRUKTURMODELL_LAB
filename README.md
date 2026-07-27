@@ -1,18 +1,19 @@
-# KI-Strukturmodell-Labor v0.7.6
+# KI-Strukturmodell-Labor v0.7.7
 
-## Neu in v0.7.6
+## Neu in v0.7.7
 
-Die MBP-Bindetasche wird robuster dargestellt:
+Robustere und deutlich sichtbare MBP-Bindetaschen-Darstellung:
 
-- Maltose/Ligand wird als eigenes Zusatzmodell über die Cartoon-Struktur gelegt.
-- Die Bindetaschen-Reste werden ebenfalls als eigene Stick-Darstellung ergänzt.
-- Dadurch hängt die Darstellung nicht mehr davon ab, ob `addStyle` auf dem 3Dmol-Hauptmodell greift.
-- Zusätzlich erscheint ein Label **Maltose / Ligand**.
-- Das Statusfeld meldet vorhandene HETATM-Namen, falls kein Ligand gefunden wird.
+- großer magenta Marker am Liganden-Zentrum
+- orange Marker für Bindetaschen-Reste im geschlossenen Zustand
+- türkisfarbene Marker für dieselben Reste im offenen Zustand
+- zusätzliche Stick-Darstellung bleibt erhalten
+- falls die lokale 1ANF-Datei keinen Liganden enthält, versucht die App automatisch den RCSB-Fallback
+- das Statusfeld meldet weiterhin den gefundenen Ligandennamen und die Zahl der markierten Reste
 
 ## Update
 
-Für ein Update auf v0.7.6 ersetzen:
+Für ein Update auf v0.7.7 ersetzen:
 
 ```text
 index.html

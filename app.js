@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.6
+/* KI-Strukturmodell-Labor v0.7.7
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.6: MBP-Bindetasche als Zusatzdarstellung. */
+   v0.7.7: MBP-Bindetasche mit sichtbaren Markern und RCSB-Fallback. */
 
-const APP_VERSION = "0.7.6";
+const APP_VERSION = "0.7.7";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -488,6 +488,27 @@ async function loadCurrentExample(force = false) {
     try {
       predPdb = await loadStructureText(predStruct);
       predPdb = preprocessPdb(predPdb, predStruct);
+
+      if (currentExample?.bindingSite?.enabled && predStruct.requireLigandForBindingSite) {
+        const cfg = currentExample.bindingSite || {};
+        const localLigands = getLigandAtoms(predPdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+        if (!localLigands.length && predStruct.url) {
+          try {
+            const remoteRaw = await fetchTextWithFallback([predStruct.url]);
+            const remotePdb = preprocessPdb(remoteRaw, predStruct);
+            const remoteLigands = getLigandAtoms(remotePdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+            if (remoteLigands.length) {
+              predPdb = remotePdb;
+              statusLines.push("Lokale 1ANF-Datei enthält keinen sichtbaren Liganden; RCSB-Fallback wurde für die Bindetasche verwendet.");
+            } else {
+              warnLines.push("Auch im RCSB-Fallback wurde kein Ligand für die Bindetaschen-Hervorhebung gefunden.");
+            }
+          } catch (fallbackErr) {
+            warnLines.push(`RCSB-Fallback für 1ANF konnte nicht geladen werden: ${fallbackErr.message}`);
+          }
+        }
+      }
+
       const shouldAlignPrediction =
         !!expPdb &&
         !!predStruct.alignTo &&
@@ -1078,6 +1099,34 @@ function addResidueNameLabels(pdb, residueItems, color = "#D84315") {
   }
 }
 
+function centroidOfAtoms(atoms) {
+  let sx = 0, sy = 0, sz = 0, n = 0;
+  for (const a of atoms || []) {
+    if (![a.x, a.y, a.z].every(Number.isFinite)) continue;
+    sx += a.x; sy += a.y; sz += a.z; n += 1;
+  }
+  return n ? { x: sx / n, y: sy / n, z: sz / n } : null;
+}
+
+function addSphereMarker(center, radius, color, opacity = 0.75) {
+  if (!viewer || !center || typeof viewer.addSphere !== "function") return;
+  viewer.addSphere({
+    center,
+    radius,
+    color,
+    opacity
+  });
+}
+
+function addPocketCaMarkers(pdb, residueNumbers, color, radius = 0.55, opacity = 0.80) {
+  if (!viewer || !pdb || !residueNumbers?.length || typeof viewer.addSphere !== "function") return;
+  const wanted = new Set(residueNumbers.map(Number));
+  for (const a of parseAtoms(pdb)) {
+    if (a.atom !== "CA" || !wanted.has(Number(a.resi))) continue;
+    addSphereMarker({ x: a.x, y: a.y, z: a.z }, radius, color, opacity);
+  }
+}
+
 function highlightBindingSite() {
   if (!currentExample?.bindingSite?.enabled || !els.showPocket?.checked) return null;
 
@@ -1113,17 +1162,26 @@ function highlightBindingSite() {
   const residueNumbers = pocketResidues.map(r => r.resi);
   const ligandResnames = Array.from(new Set(ligandAtoms.map(a => a.resn))).join("/") || "Ligand";
 
+  if (cfg.useVisibleMarkers) {
+    const ligandCenter = centroidOfAtoms(ligandAtoms);
+    addSphereMarker(ligandCenter, 2.0, "#C2185B", 0.72);
+    addCentroidLabel(ligandAtoms, "Maltose / Ligand", "#C2185B");
+    addPocketCaMarkers(closed.pdb, residueNumbers, "#F9A825", 0.62, 0.86);
+    if (cfg.showOnOpenState && loadedModels.experiment?.pdb) {
+      addPocketCaMarkers(loadedModels.experiment.pdb, residueNumbers, "#26A69A", 0.56, 0.74);
+    }
+  }
+
   // Robuster als addStyle auf dem Hauptmodell: Ligand und Bindetasche werden
   // als eigene Zusatzmodelle über die Cartoon-Darstellung gelegt.
   const ligandPdb = pdbFromAtomLines(ligandAtoms.map(a => a.line), "MBP ligand");
   if (ligandPdb) {
     const ligandModel = viewer.addModel(ligandPdb, "pdb");
     ligandModel.setStyle({}, {
-      stick: { color: "#C2185B", radius: 0.30, opacity: 1.0 },
-      sphere: { color: "#EC407A", scale: 0.52, opacity: 0.98 }
+      stick: { color: "#C2185B", radius: 0.36, opacity: 1.0 },
+      sphere: { color: "#EC407A", scale: 0.72, opacity: 0.98 }
     });
     loadedModels.bindingLigand = { model: ligandModel, pdb: ligandPdb, struct: { label: "Maltose / Ligand" } };
-    addCentroidLabel(ligandAtoms, "Maltose / Ligand", "#C2185B");
   }
 
   const closedPocketAtoms = parseAtoms(closed.pdb)
