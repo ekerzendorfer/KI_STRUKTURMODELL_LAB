@@ -1,13 +1,16 @@
-# KI-Strukturmodell-Labor v0.7.4
+# KI-Strukturmodell-Labor v0.7.5
 
-## Neu in v0.7.4
+## Neu in v0.7.5
 
-Korrektur zur MBP-Bindetaschen-Hervorhebung:
+Korrektur der MBP-Einzelansicht und der Bindetaschen-Erkennung:
 
-- Maltose/HETATM werden nicht mehr versehentlich durch den Chain-A-Filter entfernt.
-- Die geschlossene MBP-Struktur darf Protein-Kette A verwenden, während die Maltose eine andere oder keine Chain-ID trägt.
-- Das Statusfeld meldet jetzt, ob Maltose gefunden wurde und wie viele Proteinreste in der Bindetasche markiert wurden.
-- Die Hervorhebung ist robuster gegenüber unterschiedlichen PDB-Ligandennamen wie `MAL`, `BMA`, `GLC`, `MLT`, `A2G`.
+- Beim Öffnen von MBP bleibt die App jetzt wirklich bei **offen** statt wieder auf Overlay zu springen.
+- Beim Klick auf **geschlossen** wird 1ANF als Einzelzustand gezeigt und nicht automatisch an 1OMP ausgerichtet.
+- Die vielen Abweichungslisten erscheinen bei der geschlossenen Einzelansicht nicht mehr.
+- Liganden werden robuster erkannt:
+  - bevorzugt bekannte Maltose-/Zucker-Namen
+  - falls diese nicht gefunden werden, Fallback auf übrige HETATM nach Wasserfilter
+- Das Statusfeld nennt den tatsächlich gefundenen Ligandennamen und die Zahl der markierten Bindetaschenreste.
 
 ## Erwartete lokale MBP-Dateien
 
@@ -18,7 +21,7 @@ structures/mbp/experimental_closed_maltose.pdb
 
 ## Update
 
-Für ein Update auf v0.7.4 ersetzen:
+Für ein Update auf v0.7.5 ersetzen:
 
 ```text
 index.html

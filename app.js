@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.4
+/* KI-Strukturmodell-Labor v0.7.5
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.4: MBP-Maltose-/Bindetaschen-Fix. */
+   v0.7.5: MBP-Einzelansicht und Bindetasche stabilisiert. */
 
-const APP_VERSION = "0.7.4";
+const APP_VERSION = "0.7.5";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -151,8 +151,7 @@ function selectExample(id) {
   if (els.showPocket) els.showPocket.checked = !!currentExample.showPocketDefault;
   updatePocketToggleVisibility(currentExample);
   if (els.protocolOutput) els.protocolOutput.value = "";
-  currentView = currentExample.views?.overlay ? "overlay" : "experiment";
-  document.querySelectorAll(".viewBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.view === currentView));
+  setCurrentView(currentExample.defaultView || (currentExample.views?.overlay ? "overlay" : "experiment"));
   updateCheckboxesForView();
   loadCurrentExample(true);
 }
@@ -464,9 +463,18 @@ async function loadCurrentExample(force = false) {
   }
 
   // Einzelansicht von KI-/Vergleichsmodellen:
-  // Wenn das Experiment nicht sichtbar ist, wird es trotzdem still als Referenz
-  // geladen, damit das Modell bereits so ausgerichtet wird wie später im Overlay.
-  if (!expPdb && els.showPrediction.checked && predStruct?.alignTo && expStruct) {
+  // Bei normalen KI-Modellen kann intern die experimentelle Referenz geladen werden,
+  // damit die Einzelansicht schon wie im Overlay orientiert ist.
+  // Beim MBP-Zustandspaar ist das didaktisch störend: "geschlossen" soll zuerst
+  // wirklich als einzelner experimenteller Zustand erscheinen.
+  const shouldUseHiddenReference =
+    !isStatePairExample(currentExample) &&
+    !expPdb &&
+    els.showPrediction.checked &&
+    predStruct?.alignTo &&
+    expStruct;
+
+  if (shouldUseHiddenReference) {
     try {
       let refOnly = await loadStructureText(expStruct);
       expPdb = preprocessPdb(refOnly, expStruct);
@@ -480,13 +488,23 @@ async function loadCurrentExample(force = false) {
     try {
       predPdb = await loadStructureText(predStruct);
       predPdb = preprocessPdb(predPdb, predStruct);
-      if (expPdb && predStruct.alignTo) {
+      const shouldAlignPrediction =
+        !!expPdb &&
+        !!predStruct.alignTo &&
+        (!isStatePairExample(currentExample) || currentView === "overlay" || currentView === "differences");
+
+      if (shouldAlignPrediction) {
         const alignment = alignMobileToReference(predPdb, expPdb, currentExample.differenceThreshold || 2.0);
         predPdb = alignment.pdb;
         lastDiffResidues = alignment.diffResidues;
         lastAlignmentStats = alignment;
         statusLines.push(`Overlay berechnet: ${alignment.pairCount} gemeinsame Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
-        statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle (" + lastDiffResidues.join(", ") + ")" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+
+        if (isStatePairExample(currentExample)) {
+          statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+        } else {
+          statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle (" + lastDiffResidues.join(", ") + ")" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+        }
       }
       const predModel = viewer.addModel(predPdb, "pdb");
       applyModelStyle(predModel, predStruct, "prediction");
@@ -501,7 +519,9 @@ async function loadCurrentExample(force = false) {
       if (predVariant === "decoy") {
         statusLines.push("Hinweis: Dieses Modell ist nicht als AlphaFold/ColabFold-Ergebnis gekennzeichnet, sondern dient als didaktisches Vergleichsmodell.");
       } else if (predVariant === "closed_maltose") {
-        statusLines.push("Hinweis: 1ANF ist eine zweite experimentelle Struktur. Der Vergleich mit 1OMP zeigt offen ↔ geschlossen und macht induced fit sichtbar.");
+        statusLines.push(currentView === "prediction"
+          ? "Hinweis: Einzelansicht des geschlossenen maltosegebundenen Zustands 1ANF. Für die Domänenbewegung anschließend „offen + geschlossen“ oder „Unterschiede“ wählen."
+          : "Hinweis: 1ANF ist eine zweite experimentelle Struktur. Der Vergleich mit 1OMP zeigt offen ↔ geschlossen und macht induced fit sichtbar.");
       } else if (predVariant === "afdb") {
         statusLines.push("Hinweis: AlphaFold-DB P0DP23 enthält ein zusätzliches Start-Methionin; für den Vergleich mit 1CLL wird es in der App ausgeblendet und die Residuen werden umnummeriert.");
       } else if (predVariant === "af3_ca") {
@@ -979,15 +999,20 @@ function getCaCoordsForResidues(pdb, residues) {
   return out;
 }
 
-function getLigandAtoms(pdb, ligandNames = []) {
+function getLigandAtoms(pdb, ligandNames = [], fallbackToAnyHetero = false) {
   const keep = new Set((ligandNames || []).map(x => String(x).trim().toUpperCase()));
-  const atoms = parseAtoms(pdb).filter(a => a.line.startsWith("HETATM"));
-  const selected = atoms.filter(a => !keep.size || keep.has(a.resn.toUpperCase()));
-  return selected;
+  const allHetero = parseAtoms(pdb).filter(a => a.line.startsWith("HETATM"));
+  const selected = allHetero.filter(a => !keep.size || keep.has(a.resn.toUpperCase()));
+  if (selected.length || !fallbackToAnyHetero) return selected;
+
+  // Fallback für PDB-Dateien mit unerwartetem Ligandennamen:
+  // nach Wasserfilter bleiben hier meist Zuckerligand/Kristallisationszusätze.
+  // Für den Unterricht ist eine sichtbare Bindetasche wichtiger als ein stiller Fehlschlag.
+  return allHetero;
 }
 
 function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
-  const ligAtoms = getLigandAtoms(pdb, ligandNames);
+  const ligAtoms = getLigandAtoms(pdb, ligandNames, !!currentExample?.bindingSite?.fallbackToAnyHetero);
   if (!ligAtoms.length) return { residues: [], ligandAtoms: [] };
 
   const proteinAtoms = parseAtoms(pdb).filter(a => a.line.startsWith("ATOM"));
@@ -1062,7 +1087,8 @@ function highlightBindingSite() {
 
   // Geschlossene Form: Maltose deutlich und farblich kontrastiert.
   if (typeof closed.model.addStyle === "function") {
-    for (const resn of ligandNames) {
+    const ligandResnames = Array.from(new Set(ligandAtoms.map(a => a.resn)));
+    for (const resn of ligandResnames) {
       closed.model.addStyle(
         { hetflag: true, resn },
         {
@@ -1096,7 +1122,7 @@ function highlightBindingSite() {
 
   return {
     ok: true,
-    message: `Bindetasche hervorgehoben: Maltose (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
+    message: `Bindetasche hervorgehoben: ${Array.from(new Set(ligandAtoms.map(a => a.resn))).join("/") || "Ligand"} (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
   };
 }
 
