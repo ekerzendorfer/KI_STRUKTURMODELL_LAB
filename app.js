@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.2
+/* KI-Strukturmodell-Labor v0.7.3
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.2: eigene MBP-Zustandspaar-Bedienung. */
+   v0.7.3: MBP mit Maltose- und Bindetaschen-Hervorhebung. */
 
-const APP_VERSION = "0.7.2";
+const APP_VERSION = "0.7.3";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -35,6 +35,8 @@ const els = {
   showExperiment: document.getElementById("showExperiment"),
   showDifferenceResidues: document.getElementById("showDifferenceResidues"),
   showHetero: document.getElementById("showHetero"),
+  showPocket: document.getElementById("showPocket"),
+  showPocketLabel: document.getElementById("showPocketLabel"),
   viewerBackground: document.getElementById("viewerBackground"),
   representationMode: document.getElementById("representationMode"),
   predictionModelRow: document.getElementById("predictionModelRow"),
@@ -82,7 +84,7 @@ function wireEvents() {
       loadCurrentExample();
     });
   });
-  [els.showPrediction, els.showExperiment, els.showDifferenceResidues, els.showHetero].filter(Boolean).forEach(el => {
+  [els.showPrediction, els.showExperiment, els.showDifferenceResidues, els.showHetero, els.showPocket].filter(Boolean).forEach(el => {
     el.addEventListener("change", () => loadCurrentExample());
   });
   els.viewerBackground.addEventListener("change", () => {
@@ -146,6 +148,8 @@ function selectExample(id) {
   renderGuidance(currentExample);
   renderPredictionSelector(currentExample);
   if (els.showHetero) els.showHetero.checked = !!currentExample.showHeteroDefault;
+  if (els.showPocket) els.showPocket.checked = !!currentExample.showPocketDefault;
+  updatePocketToggleVisibility(currentExample);
   if (els.protocolOutput) els.protocolOutput.value = "";
   currentView = currentExample.views?.overlay ? "overlay" : "experiment";
   document.querySelectorAll(".viewBtn").forEach(btn => btn.classList.toggle("active", btn.dataset.view === currentView));
@@ -296,6 +300,14 @@ function updateViewLabels(ex = currentExample) {
   }
 
   document.querySelector(".viewer-panel")?.classList.toggle("state-pair-mode", statePair);
+}
+
+function updatePocketToggleVisibility(ex = currentExample) {
+  const enabled = !!(ex?.bindingSite?.enabled);
+  if (!els.showPocketLabel || !els.showPocket) return;
+  els.showPocketLabel.classList.toggle("hidden", !enabled);
+  els.showPocket.disabled = !enabled;
+  if (!enabled) els.showPocket.checked = false;
 }
 
 function renderPredictionSelector(ex = currentExample) {
@@ -524,6 +536,11 @@ async function loadCurrentExample(force = false) {
 
   if ((currentView === "differences" || currentView === "overlay") && els.showDifferenceResidues.checked) {
     highlightDifferences();
+  }
+
+  if (currentExample?.bindingSite?.enabled && els.showPocket?.checked) {
+    highlightBindingSite();
+    if (currentExample.bindingSite?.note) statusLines.push(currentExample.bindingSite.note);
   }
 
   if (!Object.keys(loadedModels).length) {
@@ -948,6 +965,83 @@ function getCaCoordsForResidues(pdb, residues) {
     if (a.atom === "CA" && wanted.has(a.resi) && Number.isFinite(a.x)) out.push(a);
   }
   return out;
+}
+
+function getLigandAtoms(pdb, ligandNames = []) {
+  const keep = new Set((ligandNames || []).map(x => String(x).trim().toUpperCase()));
+  return parseAtoms(pdb).filter(a => a.line.startsWith("HETATM") && (!keep.size || keep.has(a.resn.toUpperCase())));
+}
+
+function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
+  const ligAtoms = getLigandAtoms(pdb, ligandNames);
+  if (!ligAtoms.length) return [];
+  const proteinAtoms = parseAtoms(pdb).filter(a => a.line.startsWith("ATOM"));
+  const resMap = new Map();
+  for (const p of proteinAtoms) {
+    for (const l of ligAtoms) {
+      const dx = p.x - l.x;
+      const dy = p.y - l.y;
+      const dz = p.z - l.z;
+      const d2 = dx*dx + dy*dy + dz*dz;
+      if (d2 <= radius * radius) {
+        if (!resMap.has(p.resi)) resMap.set(p.resi, { resi: p.resi, resn: p.resn });
+        break;
+      }
+    }
+  }
+  return Array.from(resMap.values()).sort((a,b) => a.resi - b.resi);
+}
+
+function addResidueNameLabels(pdb, residueItems, color = "#D84315") {
+  if (!viewer || !residueItems?.length) return;
+  const residueMap = new Map(residueItems.map(r => [Number(r.resi), String(r.resn || "").trim()]));
+  for (const a of parseAtoms(pdb)) {
+    if (a.atom !== "CA") continue;
+    const resi = Number(a.resi);
+    if (!residueMap.has(resi) || !Number.isFinite(a.x)) continue;
+    const labelText = `${residueMap.get(resi)} ${resi}`;
+    viewer.addLabel(labelText, {
+      position: { x: a.x, y: a.y, z: a.z },
+      backgroundColor: "white",
+      fontColor: color,
+      fontSize: 11,
+      borderThickness: 1,
+      borderColor: color,
+      inFront: true
+    });
+  }
+}
+
+function highlightBindingSite() {
+  if (!currentExample?.bindingSite?.enabled || !els.showPocket?.checked) return;
+  const cfg = currentExample.bindingSite || {};
+  const closed = loadedModels.prediction;
+  if (!closed?.model || !closed?.pdb) return;
+  const ligandNames = cfg.ligandNames || [];
+  const radius = Number(cfg.radius || 4.5);
+  const pocketResidues = getPocketResiduesNearLigand(closed.pdb, ligandNames, radius);
+  if (!pocketResidues.length) return;
+  const residueNumbers = pocketResidues.map(r => r.resi);
+
+  if (typeof closed.model.addStyle === "function") {
+    closed.model.addStyle({ hetflag: true, resn: ligandNames }, {
+      stick: { color: "#C2185B", radius: 0.22, opacity: 0.98 },
+      sphere: { color: "#EC407A", scale: 0.42, opacity: 0.96 }
+    });
+    closed.model.addStyle({ hetflag: false, resi: residueNumbers }, {
+      stick: { color: "#F9A825", radius: 0.18, opacity: 0.95 },
+      cartoon: { color: "#FBC02D", opacity: 0.90 }
+    });
+  }
+
+  if (cfg.showOnOpenState && loadedModels.experiment?.model && typeof loadedModels.experiment.model.addStyle === "function") {
+    loadedModels.experiment.model.addStyle({ hetflag: false, resi: residueNumbers }, {
+      stick: { color: "#26A69A", radius: 0.18, opacity: 0.95 },
+      cartoon: { color: "#80CBC4", opacity: 0.88 }
+    });
+  }
+
+  if (cfg.labelResidues) addResidueNameLabels(closed.pdb, pocketResidues, "#C2410C");
 }
 
 function handleUpload(event) {

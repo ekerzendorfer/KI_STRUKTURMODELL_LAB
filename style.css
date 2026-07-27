@@ -511,3 +511,8 @@ body.viewer-expanded-active {
 .viewer-panel.state-pair-mode .controls .viewBtn[data-view="prediction"] {
   border-color: #C2410C;
 }
+
+
+.feature-toggle.hidden { display: none; }
+.feature-toggle { padding: 4px 10px; border-radius: 999px; background: #fff8e1; border: 1px solid #ffcc80; }
+.feature-toggle input { margin-right: 6px; }

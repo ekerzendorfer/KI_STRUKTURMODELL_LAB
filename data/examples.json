@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.7.2",
-    "description": "Version 0.7.2 führt für MBP eine eigene Zustandspaar-Bedienung ein: offen, geschlossen, Overlay und Unterschiede statt KI-Modell-Dropdown.",
+    "version": "0.7.3",
+    "description": "Version 0.7.3 ergänzt für MBP die didaktische Hervorhebung von Maltose und Bindetasche.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -434,7 +434,7 @@
       "intro": "MBP ist kein Enzym, sondern ein periplasmatisches Maltose-/Maltodextrin-Bindeprotein. Gerade deshalb ist es didaktisch ideal: Man sieht Ligandenbindung und Konformationsänderung ohne zusätzlich einen Reaktionsmechanismus erklären zu müssen.",
       "sequence": "",
       "showHeteroDefault": true,
-      "hetero_note": "Bei MBP ist die Maltose didaktisch zentral. Wasser wird ausgeblendet; Maltose bleibt in der geschlossenen Struktur sichtbar.",
+      "hetero_note": "Bei MBP ist die Maltose didaktisch zentral. Mit aktivierter Bindetasche wird die Maltose farbig hervorgehoben; Wasser bleibt ausgeblendet.",
       "views": {
         "prediction": true,
         "experiment": true,
@@ -443,8 +443,8 @@
         "upload": true
       },
       "questions": [
-        "Wie unterscheidet sich die offene ligandfreie Struktur von der maltosegebundenen geschlossenen Struktur?",
-        "Wo liegt die Bindetasche, und wie verändert sich ihre Zugänglichkeit beim Schließen?",
+        "Wo sitzt die Maltose in der geschlossenen Struktur, und welche Aminosäuren bilden ihre Bindetasche?",
+        "Wie verändert sich die Zugänglichkeit dieser Bindetasche zwischen offener und geschlossener Form?",
         "Warum reicht das einfache Schlüssel-Schloss-Modell hier nicht aus?",
         "Wie lässt sich der Unterschied zwischen starrer Passung und induced fit in eigenen Worten erklären?"
       ],
@@ -472,15 +472,15 @@
       "local_note": "v0.7.1 zeigt MBP beim Laden zunächst als offene ligandfreie Struktur. Die geschlossene maltosegebundene Struktur ist über Modell/Vergleich bzw. Overlay erreichbar und wird klar als experimenteller Vergleichszustand gekennzeichnet.",
       "observation_prompts": [
         "1. Klicke auf „offen“: Betrachte zuerst nur 1OMP und beschreibe die beiden Domänen.",
-        "2. Klicke auf „geschlossen“: Betrachte 1ANF einzeln und aktiviere die Ligandenanzeige.",
-        "3. Lokalisiere die Maltose in der geschlossenen Bindetasche.",
-        "4. Nutze erst danach „Overlay“ oder „Unterschiede“, um die Domänenbewegung offen ↔ geschlossen zu beobachten.",
+        "2. Aktiviere „Bindetasche hervorheben“ und beobachte, wo der spätere Bindungsbereich liegt.",
+        "3. Klicke auf „geschlossen“: Betrachte 1ANF einzeln. Die Maltose wird deutlich hervorgehoben.",
+        "4. Vergleiche offen ↔ geschlossen oder nutze „Unterschiede“, um zu sehen, wie sich das Protein um die Maltose schließt.",
         "5. Formuliere, warum dieses Beispiel induced fit besser zeigt als ein starres Schlüssel-Schloss-Modell."
       ],
       "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
       "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und erkläre, warum dieses Beispiel induced fit sichtbar macht.",
       "tasks": {
-        "observe": "Betrachte zuerst 1OMP ohne Maltose: Wo liegen die beiden Domänen, und wie offen wirkt die Bindetasche?",
+        "observe": "Betrachte zuerst 1OMP ohne Maltose: Wo liegen die beiden Domänen, und wie offen wirkt die Bindetasche? Aktiviere dann die Bindetasche.",
         "compare": "Vergleiche mit 1ANF und sichtbarer Maltose. Beschreibe die Domänenbewegung und die Veränderung der Bindetasche.",
         "limit": "Formuliere eine Modellgrenze: Warum ist Schlüssel-Schloss als Einstieg hilfreich, aber für MBP unvollständig?"
       },
@@ -536,7 +536,22 @@
       "defaultView": "experiment",
       "comparisonLabel": "Geschlossener Zustand",
       "comparisonNote": "Für MBP ist dies keine KI-Vorhersage, sondern die zweite experimentelle Struktur.",
-      "statePairMode": true
+      "statePairMode": true,
+      "showPocketDefault": true,
+      "bindingSite": {
+        "enabled": true,
+        "ligandNames": [
+          "MAL",
+          "BMA",
+          "GLC",
+          "MLT",
+          "A2G"
+        ],
+        "radius": 4.5,
+        "showOnOpenState": true,
+        "labelResidues": true,
+        "note": "Maltose wird farbig hervorgehoben; Aminosäuren in der unmittelbaren Umgebung der Maltose markieren die Bindetasche."
+      }
     }
   ]
 }

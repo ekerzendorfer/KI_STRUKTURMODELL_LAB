@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KI-Strukturmodell-Labor v0.7.2</title>
-  <link rel="stylesheet" href="style.css?v=0.7.2" />
+  <title>KI-Strukturmodell-Labor v0.7.3</title>
+  <link rel="stylesheet" href="style.css?v=0.7.3" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
 </head>
@@ -14,7 +14,7 @@
       <p class="eyebrow">CHEMIE mit KI · Mini-Tool</p>
       <h1>KI-Strukturmodell-Labor</h1>
       <p class="lead">Sequenz → KI-Strukturmodell → Experiment → Overlay → Modellgrenzen verstehen</p>
-      <p class="version">Version 0.7.2 · eigene MBP-Zustandspaar-Bedienung</p>
+      <p class="version">Version 0.7.3 · MBP mit Maltose- und Bindetaschen-Hervorhebung</p>
     </div>
   </header>
 
@@ -101,6 +101,7 @@
         <label id="showExperimentLabel"><input id="showExperiment" type="checkbox" checked /> Experiment anzeigen</label>
         <label><input id="showDifferenceResidues" type="checkbox" checked /> abweichende Bereiche hervorheben</label>
         <label><input id="showHetero" type="checkbox" /> Ionen/Liganden anzeigen</label>
+        <label id="showPocketLabel" class="feature-toggle hidden"><input id="showPocket" type="checkbox" /> Bindetasche hervorheben</label>
       </div>
 
       <div id="predictionModelRow" class="model-select-row">
@@ -205,10 +206,10 @@
 
   <footer class="wrap footer">
     <p>
-      v0.7.2 führt für MBP eine eigene Zustandspaar-Bedienung ein: offen · geschlossen · Overlay · Unterschiede.
+      v0.7.3 ergänzt bei MBP eine didaktische Hervorhebung der Maltose und der Bindetasche.
     </p>
   </footer>
 
-  <script src="app.js?v=0.7.2"></script>
+  <script src="app.js?v=0.7.3"></script>
 </body>
 </html>
