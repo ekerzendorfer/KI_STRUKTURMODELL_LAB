@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.9
+/* KI-Strukturmodell-Labor v0.7.10
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.9: MBP-HETATM-Rettung aus Roh-PDB. */
+   v0.7.10: MBP-PDB-Diagnose. */
 
-const APP_VERSION = "0.7.9";
+const APP_VERSION = "0.7.10";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -465,6 +465,40 @@ function rescueLigandFromRawPdb(processedPdb, rawPdb, statusLines = []) {
   return `${processedPdb.replace(/\s*END\s*$/m, "").trim()}\n${rescuePdb}\n`;
 }
 
+function countPdbRecords(pdb) {
+  const lines = String(pdb || "").split(/\r?\n/);
+  const stats = { atom: 0, hetatm: 0, names: [] };
+  const names = new Set();
+  for (const line of lines) {
+    const s = line.trimStart();
+    if (s.startsWith("ATOM")) stats.atom += 1;
+    if (s.startsWith("HETATM")) {
+      stats.hetatm += 1;
+      names.add(line.slice(17, 20).trim() || "?");
+    }
+  }
+  stats.names = Array.from(names).sort();
+  return stats;
+}
+
+function formatPdbStats(label, pdb) {
+  const s = countPdbRecords(pdb);
+  return `${label}: ATOM ${s.atom}, HETATM ${s.hetatm}${s.names.length ? " (" + s.names.join(", ") + ")" : ""}`;
+}
+
+function forceFallbackLigandIfNeeded(pdb, statusLines = []) {
+  const cfg = currentExample?.bindingSite || {};
+  if (!cfg.forceFallbackIfNoFinalLigand) return pdb;
+  const finalLigands = getLigandAtoms(pdb, cfg.ligandNames || [], !!cfg.fallbackToAnyHetero);
+  if (finalLigands.length) return pdb;
+
+  const fallback = String(cfg.fallbackLigandPdb || "").trim();
+  if (!fallback) return pdb;
+
+  statusLines.push("Finaldiagnose: Noch immer kein Ligand im verarbeiteten PDB; eingebettete Maltose-Reserve wird erzwungen.");
+  return `${pdb.replace(/\s*END\s*$/m, "").trim()}\n${fallback}\n`;
+}
+
 async function loadCurrentExample(force = false) {
   if (!currentExample) return;
   if (force && viewer) {
@@ -528,8 +562,13 @@ async function loadCurrentExample(force = false) {
       predPdb = preprocessPdb(predRawPdb, predStruct);
 
       if (currentExample?.bindingSite?.enabled && predStruct.requireLigandForBindingSite) {
+        statusLines.push(`PDB-Diagnose ${APP_VERSION}: geladen aus ${predStruct.file || predStruct.url || "unbekannter Quelle"}`);
+        statusLines.push(formatPdbStats("Roh-PDB", predRawPdb));
+        statusLines.push(formatPdbStats("nach Vorverarbeitung", predPdb));
         predPdb = rescueLigandFromRawPdb(predPdb, predRawPdb, statusLines);
         predPdb = ensureBindingLigandPresent(predPdb, statusLines);
+        predPdb = forceFallbackLigandIfNeeded(predPdb, statusLines);
+        statusLines.push(formatPdbStats("final für Viewer", predPdb));
       }
 
       const shouldAlignPrediction =

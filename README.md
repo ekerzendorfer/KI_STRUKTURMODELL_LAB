@@ -1,20 +1,28 @@
-# KI-Strukturmodell-Labor v0.7.9
+# KI-Strukturmodell-Labor v0.7.10
 
-## Neu in v0.7.9
+## Neu in v0.7.10
 
-Korrektur für korrekte 1ANF-Dateien, bei denen HETATM-Zeilen vorhanden sind, aber in der App dennoch nicht sichtbar wurden:
+Diese Version ist eine Diagnose-/Stabilisierungsfassung für MBP:
 
-- Für die geschlossene MBP-Datei wird keine Chain-Filterung mehr verwendet.
-- Falls bei der Vorverarbeitung HETATM-Zeilen verloren gehen, übernimmt die App den Liganden direkt aus der **Roh-PDB**.
-- Das Statusfeld zeigt eine Ligandendiagnose:
-  - HETATM nach Vorverarbeitung vorhanden
-  - oder HETATM aus Roh-PDB übernommen
-  - oder HETATM-Namen in der Rohdatei
-- Die eingebettete Maltose-Reserve bleibt nur als letzter Fallback erhalten.
+- Im Statusfeld steht bei MBP jetzt ausdrücklich:
+  - verwendete App-Version
+  - geladener Dateipfad
+  - ATOM/HETATM-Zahl in der Roh-PDB
+  - ATOM/HETATM-Zahl nach der Vorverarbeitung
+  - ATOM/HETATM-Zahl im finalen Viewer-PDB
+- Wenn final trotzdem kein Ligand vorhanden ist, wird die eingebettete Maltose-Reserve erzwungen.
+
+## Erwartete Diagnose bei korrekter 1ANF-Datei
+
+```text
+PDB-Diagnose 0.7.10: geladen aus structures/mbp/experimental_closed_maltose.pdb
+Roh-PDB: ATOM 2860, HETATM 127 (GLC, HOH)
+...
+```
 
 ## Update
 
-Für ein Update auf v0.7.9 ersetzen:
+Für ein Update auf v0.7.10 ersetzen:
 
 ```text
 index.html
