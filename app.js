@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.3
+/* KI-Strukturmodell-Labor v0.7.4
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.3: MBP mit Maltose- und Bindetaschen-Hervorhebung. */
+   v0.7.4: MBP-Maltose-/Bindetaschen-Fix. */
 
-const APP_VERSION = "0.7.3";
+const APP_VERSION = "0.7.4";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -539,8 +539,11 @@ async function loadCurrentExample(force = false) {
   }
 
   if (currentExample?.bindingSite?.enabled && els.showPocket?.checked) {
-    highlightBindingSite();
-    if (currentExample.bindingSite?.note) statusLines.push(currentExample.bindingSite.note);
+    const pocketInfo = highlightBindingSite();
+    if (pocketInfo?.message) {
+      (pocketInfo.ok ? statusLines : warnLines).push(pocketInfo.message);
+    }
+    if (currentExample.bindingSite?.note && pocketInfo?.ok) statusLines.push(currentExample.bindingSite.note);
   }
 
   if (!Object.keys(loadedModels).length) {
@@ -756,7 +759,7 @@ function preprocessPdb(pdb, struct) {
     lines = extractModel(lines, struct.modelNumber);
   }
   if (struct.chain) {
-    lines = filterChain(lines, struct.chain);
+    lines = filterChain(lines, struct.chain, !!struct.keepHeteroAcrossChains, struct.keepHetero || []);
   }
   if (struct.residueRange) {
     lines = filterResidueRange(lines, struct.residueRange[0], struct.residueRange[1]);
@@ -816,9 +819,18 @@ function extractModel(lines, modelNumber) {
   return out;
 }
 
-function filterChain(lines, chain) {
+function filterChain(lines, chain, keepHeteroAcrossChains = false, keepHetero = []) {
+  const keep = new Set((keepHetero || []).map(x => String(x).trim().toUpperCase()));
   return lines.filter(line => {
     if (!isAtomLine(line)) return true;
+
+    // Für Liganden ist die Chain-ID in PDB-Dateien nicht immer identisch mit der Protein-Kette.
+    // Bei MBP würde die Maltose sonst schon hier entfernt, bevor sie hervorgehoben werden kann.
+    if (keepHeteroAcrossChains && line.startsWith("HETATM")) {
+      const resn = line.slice(17, 20).trim().toUpperCase();
+      return !keep.size || keep.has(resn);
+    }
+
     return line[21] === chain;
   });
 }
@@ -969,14 +981,18 @@ function getCaCoordsForResidues(pdb, residues) {
 
 function getLigandAtoms(pdb, ligandNames = []) {
   const keep = new Set((ligandNames || []).map(x => String(x).trim().toUpperCase()));
-  return parseAtoms(pdb).filter(a => a.line.startsWith("HETATM") && (!keep.size || keep.has(a.resn.toUpperCase())));
+  const atoms = parseAtoms(pdb).filter(a => a.line.startsWith("HETATM"));
+  const selected = atoms.filter(a => !keep.size || keep.has(a.resn.toUpperCase()));
+  return selected;
 }
 
 function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
   const ligAtoms = getLigandAtoms(pdb, ligandNames);
-  if (!ligAtoms.length) return [];
+  if (!ligAtoms.length) return { residues: [], ligandAtoms: [] };
+
   const proteinAtoms = parseAtoms(pdb).filter(a => a.line.startsWith("ATOM"));
   const resMap = new Map();
+
   for (const p of proteinAtoms) {
     for (const l of ligAtoms) {
       const dx = p.x - l.x;
@@ -989,7 +1005,11 @@ function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
       }
     }
   }
-  return Array.from(resMap.values()).sort((a,b) => a.resi - b.resi);
+
+  return {
+    residues: Array.from(resMap.values()).sort((a,b) => a.resi - b.resi),
+    ligandAtoms: ligAtoms
+  };
 }
 
 function addResidueNameLabels(pdb, residueItems, color = "#D84315") {
@@ -1013,36 +1033,73 @@ function addResidueNameLabels(pdb, residueItems, color = "#D84315") {
 }
 
 function highlightBindingSite() {
-  if (!currentExample?.bindingSite?.enabled || !els.showPocket?.checked) return;
+  if (!currentExample?.bindingSite?.enabled || !els.showPocket?.checked) return null;
+
   const cfg = currentExample.bindingSite || {};
   const closed = loadedModels.prediction;
-  if (!closed?.model || !closed?.pdb) return;
+  if (!closed?.model || !closed?.pdb) return { ok: false, message: "Bindetasche: geschlossener Zustand ist nicht geladen." };
+
   const ligandNames = cfg.ligandNames || [];
   const radius = Number(cfg.radius || 4.5);
-  const pocketResidues = getPocketResiduesNearLigand(closed.pdb, ligandNames, radius);
-  if (!pocketResidues.length) return;
-  const residueNumbers = pocketResidues.map(r => r.resi);
+  const result = getPocketResiduesNearLigand(closed.pdb, ligandNames, radius);
+  const pocketResidues = result.residues;
+  const ligandAtoms = result.ligandAtoms;
 
-  if (typeof closed.model.addStyle === "function") {
-    closed.model.addStyle({ hetflag: true, resn: ligandNames }, {
-      stick: { color: "#C2185B", radius: 0.22, opacity: 0.98 },
-      sphere: { color: "#EC407A", scale: 0.42, opacity: 0.96 }
-    });
-    closed.model.addStyle({ hetflag: false, resi: residueNumbers }, {
-      stick: { color: "#F9A825", radius: 0.18, opacity: 0.95 },
-      cartoon: { color: "#FBC02D", opacity: 0.90 }
-    });
+  if (!ligandAtoms.length) {
+    return {
+      ok: false,
+      message: `Bindetasche: Keine Maltose/HETATM mit den Namen ${ligandNames.join(", ")} gefunden. Prüfe, ob die PDB-Datei HETATM-Zeilen für Maltose enthält.`
+    };
+  }
+  if (!pocketResidues.length) {
+    return {
+      ok: false,
+      message: `Bindetasche: Maltose gefunden (${ligandAtoms.length} Atome), aber keine Proteinreste im Umkreis von ${radius} Å.`
+    };
   }
 
+  const residueNumbers = pocketResidues.map(r => r.resi);
+
+  // Geschlossene Form: Maltose deutlich und farblich kontrastiert.
+  if (typeof closed.model.addStyle === "function") {
+    for (const resn of ligandNames) {
+      closed.model.addStyle(
+        { hetflag: true, resn },
+        {
+          stick: { color: "#C2185B", radius: 0.24, opacity: 1.0 },
+          sphere: { color: "#EC407A", scale: 0.46, opacity: 0.98 }
+        }
+      );
+    }
+
+    closed.model.addStyle(
+      { hetflag: false, resi: residueNumbers },
+      {
+        stick: { color: "#F9A825", radius: 0.18, opacity: 0.96 },
+        cartoon: { color: "#FBC02D", opacity: 0.92 }
+      }
+    );
+  }
+
+  // Offene Form: dieselben Residuen markieren, damit die spätere Tasche verortet werden kann.
   if (cfg.showOnOpenState && loadedModels.experiment?.model && typeof loadedModels.experiment.model.addStyle === "function") {
-    loadedModels.experiment.model.addStyle({ hetflag: false, resi: residueNumbers }, {
-      stick: { color: "#26A69A", radius: 0.18, opacity: 0.95 },
-      cartoon: { color: "#80CBC4", opacity: 0.88 }
-    });
+    loadedModels.experiment.model.addStyle(
+      { hetflag: false, resi: residueNumbers },
+      {
+        stick: { color: "#26A69A", radius: 0.18, opacity: 0.95 },
+        cartoon: { color: "#80CBC4", opacity: 0.88 }
+      }
+    );
   }
 
   if (cfg.labelResidues) addResidueNameLabels(closed.pdb, pocketResidues, "#C2410C");
+
+  return {
+    ok: true,
+    message: `Bindetasche hervorgehoben: Maltose (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
+  };
 }
+
 
 function handleUpload(event) {
   const file = event.target.files?.[0];

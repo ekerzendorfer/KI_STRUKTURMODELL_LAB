@@ -1,14 +1,13 @@
-# KI-Strukturmodell-Labor v0.7.3
+# KI-Strukturmodell-Labor v0.7.4
 
-## Neu in v0.7.3
+## Neu in v0.7.4
 
-Didaktische Erweiterung für das MBP-Beispiel:
+Korrektur zur MBP-Bindetaschen-Hervorhebung:
 
-- **Bindetasche hervorheben** als eigene Option
-- **Maltose** wird in der geschlossenen Form farblich deutlich dargestellt
-- Aminosäuren in der unmittelbaren Umgebung der Maltose markieren die **Bindetasche**
-- dieselben Reste können auch in der **offenen Form** hervorgehoben werden
-- dadurch wird der Übergang **Schlüssel-Schloss → induced fit** wesentlich anschaulicher
+- Maltose/HETATM werden nicht mehr versehentlich durch den Chain-A-Filter entfernt.
+- Die geschlossene MBP-Struktur darf Protein-Kette A verwenden, während die Maltose eine andere oder keine Chain-ID trägt.
+- Das Statusfeld meldet jetzt, ob Maltose gefunden wurde und wie viele Proteinreste in der Bindetasche markiert wurden.
+- Die Hervorhebung ist robuster gegenüber unterschiedlichen PDB-Ligandennamen wie `MAL`, `BMA`, `GLC`, `MLT`, `A2G`.
 
 ## Erwartete lokale MBP-Dateien
 
@@ -19,7 +18,7 @@ structures/mbp/experimental_closed_maltose.pdb
 
 ## Update
 
-Für ein Update auf v0.7.3 ersetzen:
+Für ein Update auf v0.7.4 ersetzen:
 
 ```text
 index.html
