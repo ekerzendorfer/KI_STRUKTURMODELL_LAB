@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.6.0",
-    "description": "Version 0.6.0 konsolidiert die Didaktik: Modelltypen-Tabelle, Aufgabenmodus und Begleitkurs-Seite.",
+    "version": "0.7.0",
+    "description": "Version 0.7.0 ergänzt Maltose-Bindeprotein als viertes Highlight-Beispiel: experimentell offener Zustand ohne Ligand vs. geschlossener maltosegebundener Zustand.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -423,6 +423,112 @@
         "compare": "Prüfe, ob AF3 mit Ca²⁺ dem experimentellen Ca²⁺-gebundenen Zustand näherkommt. Achte besonders auf N-Terminus, Linker und Domänenorientierung.",
         "limit": "Formuliere eine Modellgrenze: Warum ist Calmodulin kein einfacher Fall von „richtig oder falsch“, sondern ein Beispiel für Zustand, Kontext und Flexibilität?"
       }
+    },
+    {
+      "id": "mbp",
+      "title": "Maltose-Bindeprotein",
+      "subtitle": "Ligandenbindung – Schlüssel-Schloss → induced fit",
+      "level": "Fortgeschritten / SEK2+",
+      "status": "MBP · experimentell offen/geschlossen",
+      "core_message": "Maltose-Bindeprotein zeigt den Übergang vom einfachen Schlüssel-Schloss-Modell zu induced fit: Die ligandfreie Struktur ist offen, die maltosegebundene Struktur geschlossen. Die Passung entsteht nicht nur durch starre Formähnlichkeit, sondern durch eine Domänenbewegung.",
+      "intro": "MBP ist kein Enzym, sondern ein periplasmatisches Maltose-/Maltodextrin-Bindeprotein. Gerade deshalb ist es didaktisch ideal: Man sieht Ligandenbindung und Konformationsänderung ohne zusätzlich einen Reaktionsmechanismus erklären zu müssen.",
+      "sequence": "",
+      "showHeteroDefault": true,
+      "hetero_note": "Bei MBP ist die Maltose didaktisch zentral. Wasser wird ausgeblendet; Maltose bleibt in der geschlossenen Struktur sichtbar.",
+      "views": {
+        "prediction": true,
+        "experiment": true,
+        "overlay": true,
+        "differences": true,
+        "upload": true
+      },
+      "questions": [
+        "Wie unterscheidet sich die offene ligandfreie Struktur von der maltosegebundenen geschlossenen Struktur?",
+        "Wo liegt die Bindetasche, und wie verändert sich ihre Zugänglichkeit beim Schließen?",
+        "Warum reicht das einfache Schlüssel-Schloss-Modell hier nicht aus?",
+        "Wie lässt sich der Unterschied zwischen starrer Passung und induced fit in eigenen Worten erklären?"
+      ],
+      "takeaway": "MBP zeigt: Bindung ist oft kein starres Einrasten eines Schlüssels in ein Schloss. Das Protein kann sich um den Liganden schließen – Struktur ist Zustand und Bewegung.",
+      "sources": [
+        {
+          "label": "RCSB PDB 1OMP – ligandfrei/offen",
+          "url": "https://www.rcsb.org/structure/1OMP"
+        },
+        {
+          "label": "RCSB PDB 1ANF – maltosegebunden/geschlossen",
+          "url": "https://www.rcsb.org/structure/1ANF"
+        },
+        {
+          "label": "MBP open/closed – Energetics of structural change",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC240646/"
+        }
+      ],
+      "future": {
+        "af3_without_maltose": true,
+        "af3_with_maltose": true,
+        "ligand_focus": true,
+        "native_state_pair": true
+      },
+      "local_note": "v0.7.0 startet MBP bewusst nur mit zwei experimentellen Strukturen: 1OMP als offene ligandfreie Referenz und 1ANF als geschlossene maltosegebundene Vergleichsstruktur. AF3 ohne/mit Maltose ist erst für einen späteren Schritt vorgesehen.",
+      "observation_prompts": [
+        "Starte mit der offenen Struktur 1OMP und beschreibe die beiden Domänen.",
+        "Schalte zur geschlossenen maltosegebundenen Struktur 1ANF um und aktiviere Ionen/Liganden.",
+        "Suche die Maltose in der Bindetasche und beobachte, wie sich die Domänen um sie schließen.",
+        "Nutze Overlay/Unterschiede: Achte auf die globale Domänenbewegung, nicht nur auf einzelne abweichende Reste.",
+        "Formuliere, warum MBP vom Schlüssel-Schloss-Modell zum induced-fit-Modell führt."
+      ],
+      "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
+      "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und erkläre, warum dieses Beispiel induced fit sichtbar macht.",
+      "tasks": {
+        "observe": "Betrachte zuerst 1OMP ohne Maltose: Wo liegen die beiden Domänen, und wie offen wirkt die Bindetasche?",
+        "compare": "Vergleiche mit 1ANF und sichtbarer Maltose. Beschreibe die Domänenbewegung und die Veränderung der Bindetasche.",
+        "limit": "Formuliere eine Modellgrenze: Warum ist Schlüssel-Schloss als Einstieg hilfreich, aber für MBP unvollständig?"
+      },
+      "differenceThreshold": 3.0,
+      "structures": [
+        {
+          "id": "experiment_open_apo",
+          "label": "Experiment: MBP offen / ohne Maltose (1OMP)",
+          "role": "experiment",
+          "source": "local",
+          "file": "structures/mbp/experimental_open_apo.pdb",
+          "url": "https://files.rcsb.org/download/1OMP.pdb",
+          "pdb_id": "1OMP",
+          "chain": "A",
+          "style": "cartoon",
+          "color": "#2E7D32",
+          "visibleByDefault": true,
+          "note": "Ligandfreie offene experimentelle MBP-Struktur. Lokale Datei wird bevorzugt; RCSB dient als Fallback.",
+          "stripWater": true
+        },
+        {
+          "id": "comparison_closed_maltose",
+          "label": "Experiment: MBP geschlossen / mit Maltose (1ANF)",
+          "shortLabel": "geschlossen mit Maltose",
+          "role": "comparison",
+          "variant": "closed_maltose",
+          "source": "local",
+          "file": "structures/mbp/experimental_closed_maltose.pdb",
+          "url": "https://files.rcsb.org/download/1ANF.pdb",
+          "pdb_id": "1ANF",
+          "chain": "A",
+          "alignTo": "experiment",
+          "style": "cartoon",
+          "color": "#C2410C",
+          "visibleByDefault": true,
+          "note": "Maltosegebundene geschlossene experimentelle MBP-Struktur. Maltose wird bei aktivierter Ligandenanzeige sichtbar.",
+          "stripWater": true,
+          "keepHetero": [
+            "MAL",
+            "BMA",
+            "GLC",
+            "MLT",
+            "A2G",
+            "GOL",
+            "SO4"
+          ]
+        }
+      ]
     }
   ]
 }

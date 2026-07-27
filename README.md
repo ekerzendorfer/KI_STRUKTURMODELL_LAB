@@ -1,23 +1,38 @@
-# KI-Strukturmodell-Labor v0.6.0
+# KI-Strukturmodell-Labor v0.7.0
 
-Schlanke GitHub-Pages-Webapp zum Vergleich von KI-Proteinstrukturmodellen mit experimentellen Referenzstrukturen.
+Schlanke GitHub-Pages-Webapp zum Vergleich von Proteinstrukturmodellen und experimentellen Strukturzuständen.
 
-## Neu in v0.6.0
+## Neu in v0.7.0
 
-- Didaktische Konsolidierung direkt in der App:
-  - Tabelle **Modelltypen richtig lesen**
-  - Aufgabenmodus mit drei Schritten:
-    1. Beobachte
-    2. Vergleiche
-    3. Formuliere die Modellgrenze
-- Aufgaben sind pro Beispiel datengetrieben in `data/examples.json` hinterlegt.
-- Protokolltext übernimmt den Aufgabenmodus.
-- Begleitkurs-Seite ergänzt:
-  - `begleitkurs/strukturmodell_lab.md`
+- Viertes Beispiel: **Maltose-Bindeprotein (MBP)**.
+- Didaktischer Fokus: **Schlüssel-Schloss-Modell → induced fit**.
+- Vergleich zunächst bewusst nur mit zwei experimentellen Strukturen:
+  - `1OMP`: offene ligandfreie Form
+  - `1ANF`: geschlossene maltosegebundene Form
+- Die geschlossene maltosegebundene Struktur erscheint als **experimentelle Vergleichsstruktur**, nicht als KI-Modell.
+- Maltose bleibt bei aktivierter Ligandenanzeige sichtbar.
+- AF3 ohne/mit Maltose ist für spätere Versionen vorbereitet, aber noch nicht eingebaut.
+
+## Erwartete Strukturdateien für MBP
+
+```text
+structures/mbp/
+├── experimental_open_apo.pdb
+└── experimental_closed_maltose.pdb
+```
+
+Download-Quellen:
+
+```text
+https://files.rcsb.org/download/1OMP.pdb
+https://files.rcsb.org/download/1ANF.pdb
+```
+
+Die App nutzt diese RCSB-Links als Fallback. Für den stabilen Unterrichtsbetrieb sollten die Dateien aber lokal ins Repo gelegt werden.
 
 ## Update
 
-Für ein Update auf v0.6.0 mindestens ersetzen:
+Für ein Update auf v0.7.0 mindestens ersetzen:
 
 ```text
 index.html
@@ -27,16 +42,17 @@ data/examples.json
 README.md
 ```
 
-Zusätzlich neu kopieren:
+Zusätzlich aktualisiert:
 
 ```text
 begleitkurs/strukturmodell_lab.md
 ```
 
-Der Ordner `structures/` soll nicht überschrieben werden, wenn dort bereits PDB-Dateien liegen.
+Den Ordner `structures/` nicht überschreiben, wenn dort bereits PDB-Dateien liegen.
 
 ## Didaktische Linie
 
 - Trp-cage: kleine Peptide und Modellvariation
-- Ubiquitin: stabile Proteine und starke KI-Vorhersagen
+- Ubiquitin: stabile Faltung und starke KI-Vorhersagen
 - Calmodulin: Zustand, Calcium-Kontext und Grenzen eines einzelnen Strukturmodells
+- MBP: Ligandenbindung, Domänenbewegung und induced fit

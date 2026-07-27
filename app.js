@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.6.0
+/* KI-Strukturmodell-Labor v0.7.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.6.0: didaktische Konsolidierung und Aufgabenmodus. */
+   v0.7.0: MBP open/closed und induced fit. */
 
-const APP_VERSION = "0.6.0";
+const APP_VERSION = "0.7.0";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -197,7 +197,7 @@ function generateProtocolText() {
   if (!currentExample || !els.protocolOutput) return;
   const activeStructures = Object.values(loadedModels).map(entry => entry.struct?.label || "geladene Struktur");
   const viewLabel = {
-    prediction: "KI-Modell",
+    prediction: "Modell / Vergleich",
     experiment: "Experiment",
     overlay: "Overlay",
     differences: "Unterschiede"
@@ -216,7 +216,7 @@ function generateProtocolText() {
 
   const selectedPred = getSelectedPredictionStruct();
   const selectedPredVariant = selectedPred ? (selectedPred.variant || selectedPred.id) : "";
-  const selectedPredKind = selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell";
+  const selectedPredKind = selectedPredVariant === "closed_maltose" ? "Gewählte experimentelle Vergleichsstruktur" : (selectedPredVariant === "decoy" ? "Gewähltes Vergleichsmodell" : "Gewähltes KI-Modell");
   const selectedPredLine = selectedPred ? `\n${selectedPredKind}: ${selectedPred.label || selectedPred.shortLabel || ""}\n` : "";
 
   els.protocolOutput.value = `KI-Strukturmodell-Labor – Protokollhilfe\n\nBeispiel: ${currentExample.title}\nNiveau: ${currentExample.level || ""}\nKernaussage: ${currentExample.core_message || ""}${selectedPredLine}${currentExample.model_limit ? "\nModellgrenze: " + currentExample.model_limit + "\n" : ""}\nSequenz:\n${currentExample.sequence || "nicht hinterlegt"}\n\nAktuelle Ansicht: ${viewLabel}\nGeladene Struktur(en): ${activeStructures.length ? activeStructures.join(" | ") : "keine"}${alignment}\n\nAufgabenmodus:\n${taskText || "keine Aufgaben hinterlegt"}\n\nBeobachtungsauftrag:\n${prompts || "keine Beobachtungsaufträge hinterlegt"}\n\nLeitfragen:\n${questions || "keine Leitfragen hinterlegt"}\n\nModellgrenze:\n${currentExample.model_limit || "noch nicht hinterlegt"}\n\nEigene Beobachtung:\n- \n\nBegründete Aussage:\nDieses Beispiel zeigt, dass ...\n\nMerksatz / Takeaway:\n${currentExample.takeaway || currentExample.protocol_focus || ""}\n`;
@@ -237,7 +237,7 @@ async function copyProtocolText() {
 
 
 function getPredictionStructures(ex = currentExample) {
-  return (ex?.structures || []).filter(s => s.role === "prediction" && !s.disabled);
+  return (ex?.structures || []).filter(s => (s.role === "prediction" || s.role === "comparison") && !s.disabled);
 }
 
 function getDefaultPredictionVariant(ex = currentExample) {
@@ -294,8 +294,8 @@ function updatePredictionModelNote() {
   if (variant === "best") {
     shortNote = "Standard: bestbewertetes ColabFold/AF2-Modell.";
     interpretation =
-      "ColabFold/AF2 best: aus der Aminosäuresequenz berechnet, ohne explizit gesetzte Calcium-Ionen. " +
-      "Dieses Modell zeigt, was ein starkes Sequenzmodell leistet, wenn der konkrete Ca²⁺-gebundene Zustand nicht als Eingabe vorgegeben wird.";
+      "ColabFold/AF2 best: aus der Aminosäuresequenz berechnet. " +
+      "Dieses Modell zeigt, was ein starkes Sequenzmodell leistet, wenn der konkrete biologische Kontext nicht vollständig als Eingabe vorgegeben wird.";
   } else if (variant === "alternative") {
     shortNote = "Vergleichsmodell: weiteres ColabFold/AF2-Modell zur Diskussion von Modellqualität.";
     interpretation =
@@ -311,14 +311,18 @@ function updatePredictionModelNote() {
     shortNote = "AF3 mit Ca²⁺: AlphaFold-Server-Modell mit vier explizit vorgegebenen Calcium-Ionen.";
     interpretation =
       "AF3 mit Ca²⁺: hier wird der Cofaktor-Kontext ausdrücklich mitgegeben. " +
-      "Gerade deshalb ist der Vergleich mit 1CLL didaktisch interessant: bessere Kontextinformation bedeutet nicht automatisch Identität mit der experimentellen Struktur. " +
-      "Abweichungen können flexible Bereiche, andere Modellannahmen oder Grenzen der Vorhersage sichtbar machen.";
+      "Gerade deshalb ist der Vergleich mit 1CLL didaktisch interessant: bessere Kontextinformation bedeutet nicht automatisch Identität mit der experimentellen Struktur.";
+  } else if (variant === "closed_maltose") {
+    shortNote = "Experimentelles Vergleichsmodell: geschlossene MBP-Struktur mit Maltose.";
+    interpretation =
+      "MBP geschlossen mit Maltose: Dies ist kein KI-Modell, sondern eine zweite experimentelle Struktur. " +
+      "Der Vergleich mit der offenen ligandfreien Struktur zeigt die Domänenbewegung: Die Bindetasche schließt sich um Maltose. " +
+      "Damit wird sichtbar, warum das starre Schlüssel-Schloss-Modell für viele Proteine nur eine erste Näherung ist.";
   } else if (variant === "decoy") {
     shortNote = "Didaktisches Störmodell: optionales, klar gekennzeichnetes Vergleichsmodell.";
     interpretation =
       "Didaktisches Störmodell: kein AlphaFold/ColabFold-Ergebnis. " +
-      "Es soll noch proteinartig aussehen, aber deutlicher abweichen, z. B. durch andere Domänenorientierung oder stärker bewegte End-/Linkerbereiche. " +
-      "Nur verwenden, wenn es die Beobachtung wirklich klarer macht.";
+      "Es soll noch proteinartig aussehen, aber deutlicher abweichen. Nur verwenden, wenn es die Beobachtung wirklich klarer macht.";
   }
 
   if (els.predictionModelNote) els.predictionModelNote.textContent = shortNote;
@@ -408,10 +412,15 @@ async function loadCurrentExample(force = false) {
       loadedModels.prediction = { model: predModel, pdb: predPdb, struct: predStruct };
       const predLabel = predStruct.shortLabel ? `${predStruct.label} – ${predStruct.shortLabel}` : predStruct.label;
       const predVariant = predStruct.variant || predStruct.id;
-      const predKind = predVariant === "decoy" ? "Didaktisches Störmodell" : "KI-Modell";
+      const predKind =
+        predVariant === "decoy" ? "Didaktisches Störmodell" :
+        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Experimentelle Vergleichsstruktur" :
+        "KI-Modell";
       statusLines.push(`${predKind} geladen: ${predLabel} (${predStruct.color || "#EF6C00"}).`);
       if (predVariant === "decoy") {
         statusLines.push("Hinweis: Dieses Modell ist nicht als AlphaFold/ColabFold-Ergebnis gekennzeichnet, sondern dient als didaktisches Vergleichsmodell.");
+      } else if (predVariant === "closed_maltose") {
+        statusLines.push("Hinweis: 1ANF ist eine zweite experimentelle Struktur. Der Vergleich mit 1OMP zeigt offen ↔ geschlossen und macht induced fit sichtbar.");
       } else if (predVariant === "afdb") {
         statusLines.push("Hinweis: AlphaFold-DB P0DP23 enthält ein zusätzliches Start-Methionin; für den Vergleich mit 1CLL wird es in der App ausgeblendet und die Residuen werden umnummeriert.");
       } else if (predVariant === "af3_ca") {
@@ -419,7 +428,10 @@ async function loadCurrentExample(force = false) {
       }
     } catch (err) {
       const predVariant = predStruct.variant || predStruct.id;
-      const predKind = predVariant === "decoy" ? "Didaktisches Störmodell" : "KI-Modell";
+      const predKind =
+        predVariant === "decoy" ? "Didaktisches Störmodell" :
+        predVariant === "closed_maltose" || predStruct.role === "comparison" ? "Experimentelle Vergleichsstruktur" :
+        "KI-Modell";
       warnLines.push(`${predKind} nicht geladen: ${err.message}`);
       if (predStruct.note) warnLines.push(predStruct.note);
     }
@@ -447,7 +459,7 @@ async function loadCurrentExample(force = false) {
 
   if (!Object.keys(loadedModels).length) {
     showEmptyViewerNotice();
-    const disabledPred = structures.find(s => s.role === "prediction" && s.disabled);
+    const disabledPred = structures.find(s => (s.role === "prediction" || s.role === "comparison") && s.disabled);
     if (disabledPred) warnLines.push(disabledPred.note);
   } else {
     if (typeof viewer.resize === "function") viewer.resize();
