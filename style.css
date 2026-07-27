@@ -489,3 +489,12 @@ body.viewer-expanded-active {
     grid-template-columns: 1fr;
   }
 }
+
+
+.model-select-row.comparison-mode {
+  border-left: 4px solid #C2410C;
+}
+
+.model-select-row.comparison-mode .model-select-note {
+  color: var(--text);
+}

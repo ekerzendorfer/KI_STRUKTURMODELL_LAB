@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.7.0",
-    "description": "Version 0.7.0 ergänzt Maltose-Bindeprotein als viertes Highlight-Beispiel: experimentell offener Zustand ohne Ligand vs. geschlossener maltosegebundener Zustand.",
+    "version": "0.7.1",
+    "description": "Version 0.7.1 korrigiert die Bedienlogik für MBP: Beim Öffnen wird zunächst nur die offene Struktur angezeigt; die geschlossene maltosegebundene Struktur ist als experimenteller Vergleichszustand erreichbar.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -469,13 +469,13 @@
         "ligand_focus": true,
         "native_state_pair": true
       },
-      "local_note": "v0.7.0 startet MBP bewusst nur mit zwei experimentellen Strukturen: 1OMP als offene ligandfreie Referenz und 1ANF als geschlossene maltosegebundene Vergleichsstruktur. AF3 ohne/mit Maltose ist erst für einen späteren Schritt vorgesehen.",
+      "local_note": "v0.7.1 zeigt MBP beim Laden zunächst als offene ligandfreie Struktur. Die geschlossene maltosegebundene Struktur ist über Modell/Vergleich bzw. Overlay erreichbar und wird klar als experimenteller Vergleichszustand gekennzeichnet.",
       "observation_prompts": [
-        "Starte mit der offenen Struktur 1OMP und beschreibe die beiden Domänen.",
-        "Schalte zur geschlossenen maltosegebundenen Struktur 1ANF um und aktiviere Ionen/Liganden.",
-        "Suche die Maltose in der Bindetasche und beobachte, wie sich die Domänen um sie schließen.",
-        "Nutze Overlay/Unterschiede: Achte auf die globale Domänenbewegung, nicht nur auf einzelne abweichende Reste.",
-        "Formuliere, warum MBP vom Schlüssel-Schloss-Modell zum induced-fit-Modell führt."
+        "1. Öffne zuerst nur die offene Struktur 1OMP und beschreibe die beiden Domänen.",
+        "2. Schalte zu Modell/Vergleich, um die geschlossene maltosegebundene Struktur 1ANF einzeln zu sehen.",
+        "3. Aktiviere Ionen/Liganden und lokalisiere die Maltose in der geschlossenen Struktur.",
+        "4. Nutze erst danach Overlay/Unterschiede, um die Domänenbewegung offen ↔ geschlossen zu beobachten.",
+        "5. Formuliere, warum dieses Beispiel induced fit besser zeigt als ein starres Schlüssel-Schloss-Modell."
       ],
       "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
       "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und erkläre, warum dieses Beispiel induced fit sichtbar macht.",
@@ -528,7 +528,10 @@
             "SO4"
           ]
         }
-      ]
+      ],
+      "defaultView": "experiment",
+      "comparisonLabel": "Vergleichszustand",
+      "comparisonNote": "Für MBP ist dies keine KI-Vorhersage, sondern eine zweite experimentelle Struktur."
     }
   ]
 }

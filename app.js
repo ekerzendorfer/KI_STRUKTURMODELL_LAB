@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.0
+/* KI-Strukturmodell-Labor v0.7.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.0: MBP open/closed und induced fit. */
+   v0.7.1: MBP-Bedienlogik für experimentelles Zustandspaar korrigiert. */
 
-const APP_VERSION = "0.7.0";
+const APP_VERSION = "0.7.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -129,6 +129,7 @@ function renderCards(examples) {
 function selectExample(id) {
   currentExample = examplesData.examples.find(e => e.id === id);
   selectedPredictionVariant = getDefaultPredictionVariant(currentExample);
+  setCurrentView(currentExample.defaultView || "overlay");
   uploadedPdb = null;
   els.pdbUpload.value = "";
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("active", c.dataset.id === id));
@@ -252,15 +253,31 @@ function getSelectedPredictionStruct(ex = currentExample) {
   return predictions.find(s => (s.variant || s.id) === selectedPredictionVariant) || predictions[0];
 }
 
+function hasComparisonStructures(ex = currentExample) {
+  return !!(ex?.structures || []).some(s => s.role === "comparison" && !s.disabled);
+}
+
+function setCurrentView(view) {
+  currentView = view;
+  document.querySelectorAll(".viewBtn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === currentView);
+  });
+}
+
 function renderPredictionSelector(ex = currentExample) {
   const predictions = getPredictionStructures(ex);
   if (!els.predictionModelRow || !els.predictionModelSelect) return;
 
-  if (predictions.length <= 1) {
-    els.predictionModelRow.style.display = predictions.length ? "flex" : "none";
-  } else {
-    els.predictionModelRow.style.display = "flex";
+  const label = els.predictionModelRow.querySelector("label strong");
+
+  els.predictionModelRow.classList.toggle("comparison-mode", hasComparisonStructures(ex));
+  if (label) label.textContent = hasComparisonStructures(ex) ? `${ex.comparisonLabel || "Vergleichszustand"}:` : "KI-/Vergleichsmodell:";
+
+  if (!predictions.length) {
+    els.predictionModelRow.style.display = "none";
+    return;
   }
+  els.predictionModelRow.style.display = "flex";
 
   els.predictionModelSelect.innerHTML = "";
   predictions.forEach(struct => {
@@ -274,6 +291,9 @@ function renderPredictionSelector(ex = currentExample) {
     selectedPredictionVariant = getDefaultPredictionVariant(ex);
   }
   els.predictionModelSelect.value = selectedPredictionVariant;
+
+  // Bei MBP gibt es aktuell nur einen geschlossenen Vergleichszustand.
+  // Das Dropdown bleibt sichtbar, aber gesperrt und wird als Zustandspaar erklärt.
   els.predictionModelSelect.disabled = predictions.length <= 1;
   updatePredictionModelNote();
 }
@@ -313,7 +333,7 @@ function updatePredictionModelNote() {
       "AF3 mit Ca²⁺: hier wird der Cofaktor-Kontext ausdrücklich mitgegeben. " +
       "Gerade deshalb ist der Vergleich mit 1CLL didaktisch interessant: bessere Kontextinformation bedeutet nicht automatisch Identität mit der experimentellen Struktur.";
   } else if (variant === "closed_maltose") {
-    shortNote = "Experimentelles Vergleichsmodell: geschlossene MBP-Struktur mit Maltose.";
+    shortNote = "Experimenteller Vergleichszustand: geschlossene MBP-Struktur mit Maltose. Zuerst einzeln ansehen, dann per Overlay vergleichen.";
     interpretation =
       "MBP geschlossen mit Maltose: Dies ist kein KI-Modell, sondern eine zweite experimentelle Struktur. " +
       "Der Vergleich mit der offenen ligandfreien Struktur zeigt die Domänenbewegung: Die Bindetasche schließt sich um Maltose. " +
