@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.5
+/* KI-Strukturmodell-Labor v0.7.6
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.5: MBP-Einzelansicht und Bindetasche stabilisiert. */
+   v0.7.6: MBP-Bindetasche als Zusatzdarstellung. */
 
-const APP_VERSION = "0.7.5";
+const APP_VERSION = "0.7.6";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -1004,10 +1004,6 @@ function getLigandAtoms(pdb, ligandNames = [], fallbackToAnyHetero = false) {
   const allHetero = parseAtoms(pdb).filter(a => a.line.startsWith("HETATM"));
   const selected = allHetero.filter(a => !keep.size || keep.has(a.resn.toUpperCase()));
   if (selected.length || !fallbackToAnyHetero) return selected;
-
-  // Fallback für PDB-Dateien mit unerwartetem Ligandennamen:
-  // nach Wasserfilter bleiben hier meist Zuckerligand/Kristallisationszusätze.
-  // Für den Unterricht ist eine sichtbare Bindetasche wichtiger als ein stiller Fehlschlag.
   return allHetero;
 }
 
@@ -1037,6 +1033,31 @@ function getPocketResiduesNearLigand(pdb, ligandNames = [], radius = 4.5) {
   };
 }
 
+function pdbFromAtomLines(atomLines, remark = "selection") {
+  const lines = atomLines.filter(Boolean);
+  if (!lines.length) return "";
+  return `REMARK ${remark}\n${lines.join("\n")}\nEND\n`;
+}
+
+function addCentroidLabel(atoms, text, color = "#C2185B") {
+  if (!viewer || !atoms?.length) return;
+  let sx = 0, sy = 0, sz = 0, n = 0;
+  for (const a of atoms) {
+    if (![a.x, a.y, a.z].every(Number.isFinite)) continue;
+    sx += a.x; sy += a.y; sz += a.z; n += 1;
+  }
+  if (!n) return;
+  viewer.addLabel(text, {
+    position: { x: sx / n, y: sy / n, z: sz / n },
+    backgroundColor: "white",
+    fontColor: color,
+    fontSize: 14,
+    borderThickness: 1,
+    borderColor: color,
+    inFront: true
+  });
+}
+
 function addResidueNameLabels(pdb, residueItems, color = "#D84315") {
   if (!viewer || !residueItems?.length) return;
   const residueMap = new Map(residueItems.map(r => [Number(r.resi), String(r.resn || "").trim()]));
@@ -1062,7 +1083,9 @@ function highlightBindingSite() {
 
   const cfg = currentExample.bindingSite || {};
   const closed = loadedModels.prediction;
-  if (!closed?.model || !closed?.pdb) return { ok: false, message: "Bindetasche: geschlossener Zustand ist nicht geladen." };
+  if (!closed?.model || !closed?.pdb) {
+    return { ok: false, message: "Bindetasche: geschlossener Zustand ist nicht geladen. Bitte „geschlossen“ oder „offen + geschlossen“ wählen." };
+  }
 
   const ligandNames = cfg.ligandNames || [];
   const radius = Number(cfg.radius || 4.5);
@@ -1070,59 +1093,68 @@ function highlightBindingSite() {
   const pocketResidues = result.residues;
   const ligandAtoms = result.ligandAtoms;
 
+  const heteroNames = Array.from(new Set(parseAtoms(closed.pdb)
+    .filter(a => a.line.startsWith("HETATM"))
+    .map(a => a.resn))).sort();
+
   if (!ligandAtoms.length) {
     return {
       ok: false,
-      message: `Bindetasche: Keine Maltose/HETATM mit den Namen ${ligandNames.join(", ")} gefunden. Prüfe, ob die PDB-Datei HETATM-Zeilen für Maltose enthält.`
+      message: `Bindetasche: Kein HETATM-Ligand gefunden. Vorhandene HETATM-Namen: ${heteroNames.length ? heteroNames.join(", ") : "keine"}.`
     };
   }
   if (!pocketResidues.length) {
     return {
       ok: false,
-      message: `Bindetasche: Maltose gefunden (${ligandAtoms.length} Atome), aber keine Proteinreste im Umkreis von ${radius} Å.`
+      message: `Bindetasche: Ligand gefunden (${ligandAtoms.length} Atome; ${Array.from(new Set(ligandAtoms.map(a => a.resn))).join("/")}), aber keine Proteinreste im Umkreis von ${radius} Å.`
     };
   }
 
   const residueNumbers = pocketResidues.map(r => r.resi);
+  const ligandResnames = Array.from(new Set(ligandAtoms.map(a => a.resn))).join("/") || "Ligand";
 
-  // Geschlossene Form: Maltose deutlich und farblich kontrastiert.
-  if (typeof closed.model.addStyle === "function") {
-    const ligandResnames = Array.from(new Set(ligandAtoms.map(a => a.resn)));
-    for (const resn of ligandResnames) {
-      closed.model.addStyle(
-        { hetflag: true, resn },
-        {
-          stick: { color: "#C2185B", radius: 0.24, opacity: 1.0 },
-          sphere: { color: "#EC407A", scale: 0.46, opacity: 0.98 }
-        }
-      );
-    }
-
-    closed.model.addStyle(
-      { hetflag: false, resi: residueNumbers },
-      {
-        stick: { color: "#F9A825", radius: 0.18, opacity: 0.96 },
-        cartoon: { color: "#FBC02D", opacity: 0.92 }
-      }
-    );
+  // Robuster als addStyle auf dem Hauptmodell: Ligand und Bindetasche werden
+  // als eigene Zusatzmodelle über die Cartoon-Darstellung gelegt.
+  const ligandPdb = pdbFromAtomLines(ligandAtoms.map(a => a.line), "MBP ligand");
+  if (ligandPdb) {
+    const ligandModel = viewer.addModel(ligandPdb, "pdb");
+    ligandModel.setStyle({}, {
+      stick: { color: "#C2185B", radius: 0.30, opacity: 1.0 },
+      sphere: { color: "#EC407A", scale: 0.52, opacity: 0.98 }
+    });
+    loadedModels.bindingLigand = { model: ligandModel, pdb: ligandPdb, struct: { label: "Maltose / Ligand" } };
+    addCentroidLabel(ligandAtoms, "Maltose / Ligand", "#C2185B");
   }
 
-  // Offene Form: dieselben Residuen markieren, damit die spätere Tasche verortet werden kann.
-  if (cfg.showOnOpenState && loadedModels.experiment?.model && typeof loadedModels.experiment.model.addStyle === "function") {
-    loadedModels.experiment.model.addStyle(
-      { hetflag: false, resi: residueNumbers },
-      {
-        stick: { color: "#26A69A", radius: 0.18, opacity: 0.95 },
-        cartoon: { color: "#80CBC4", opacity: 0.88 }
-      }
-    );
+  const closedPocketAtoms = parseAtoms(closed.pdb)
+    .filter(a => a.line.startsWith("ATOM") && residueNumbers.includes(a.resi));
+  const closedPocketPdb = pdbFromAtomLines(closedPocketAtoms.map(a => a.line), "MBP closed binding pocket");
+  if (closedPocketPdb) {
+    const closedPocketModel = viewer.addModel(closedPocketPdb, "pdb");
+    closedPocketModel.setStyle({}, {
+      stick: { color: "#F9A825", radius: 0.20, opacity: 0.98 }
+    });
+    loadedModels.bindingPocketClosed = { model: closedPocketModel, pdb: closedPocketPdb, struct: { label: "Bindetasche geschlossen" } };
+  }
+
+  if (cfg.showOnOpenState && loadedModels.experiment?.pdb) {
+    const openPocketAtoms = parseAtoms(loadedModels.experiment.pdb)
+      .filter(a => a.line.startsWith("ATOM") && residueNumbers.includes(a.resi));
+    const openPocketPdb = pdbFromAtomLines(openPocketAtoms.map(a => a.line), "MBP open binding pocket residues");
+    if (openPocketPdb) {
+      const openPocketModel = viewer.addModel(openPocketPdb, "pdb");
+      openPocketModel.setStyle({}, {
+        stick: { color: "#26A69A", radius: 0.20, opacity: 0.95 }
+      });
+      loadedModels.bindingPocketOpen = { model: openPocketModel, pdb: openPocketPdb, struct: { label: "Bindetasche offen" } };
+    }
   }
 
   if (cfg.labelResidues) addResidueNameLabels(closed.pdb, pocketResidues, "#C2410C");
 
   return {
     ok: true,
-    message: `Bindetasche hervorgehoben: ${Array.from(new Set(ligandAtoms.map(a => a.resn))).join("/") || "Ligand"} (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
+    message: `Bindetasche hervorgehoben: ${ligandResnames} (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
   };
 }
 
