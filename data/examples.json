@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.8.1",
-    "description": "Version 0.8.1 wertet den allgemeinen Unterschiede-Modus für Trp-cage, Ubiquitin und Calmodulin didaktisch auf: blassere Gesamtmodelle, deutlichere Abweichungsmarker und klarere Erläuterung im Textfeld.",
+    "version": "0.8.2",
+    "description": "Version 0.8.2 ergänzt für MBP einen eigenen Unterschiede-Modus: Ausrichtung über eine Ankerdomäne, Hervorhebung der bewegten Domäne und klarere Deutung von induced fit.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -478,13 +478,13 @@
         "5. Formuliere, warum dieses Beispiel induced fit besser zeigt als ein starres Schlüssel-Schloss-Modell."
       ],
       "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
-      "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und erkläre, warum dieses Beispiel induced fit sichtbar macht.",
+      "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und nutze den Unterschiede-Modus, um die Domänenbewegung als Beispiel für induced fit zu erklären.",
       "tasks": {
         "observe": "Betrachte zuerst 1OMP ohne Maltose: Wo liegen die beiden Domänen, und wie offen wirkt die Bindetasche? Aktiviere dann die Bindetasche.",
-        "compare": "Vergleiche mit 1ANF und sichtbarer Maltose. Beschreibe die Domänenbewegung und die Veränderung der Bindetasche.",
+        "compare": "Nutze „offen + geschlossen“ für den ersten Gesamteindruck und danach „Unterschiede“. Im Unterschiede-Modus bleibt eine Domäne als Bezugspunkt stehen; die bewegte Domäne zeigt, wie sich MBP beim Schließen um die Maltose verändert.",
         "limit": "Formuliere eine Modellgrenze: Warum ist Schlüssel-Schloss als Einstieg hilfreich, aber für MBP unvollständig?"
       },
-      "differenceThreshold": 3.0,
+      "differenceThreshold": 4.0,
       "structures": [
         {
           "id": "experiment_open_apo",
@@ -581,6 +581,49 @@
         "referenceResidueSummary": "ASN12, ASP14, LYS15, GLU44, TRP62, ALA63, ASP65, ARG66, GLU111, GLU153, PRO154, TYR155, PHE156, TRP230, MET330, TRP340, ARG344",
         "labelLigand": false,
         "showDiagnostics": false
+      },
+      "domainMotion": {
+        "enabled": true,
+        "modeLabel": "Domänenbewegung / induced fit",
+        "anchorRanges": [
+          [
+            1,
+            108
+          ],
+          [
+            263,
+            311
+          ]
+        ],
+        "movingRanges": [
+          [
+            113,
+            258
+          ],
+          [
+            320,
+            370
+          ]
+        ],
+        "hingeRanges": [
+          [
+            109,
+            112
+          ],
+          [
+            259,
+            262
+          ]
+        ],
+        "anchorName": "Ankerdomäne",
+        "movingName": "bewegte Domäne",
+        "hingeName": "Hinge-/Scharnierbereiche",
+        "openMovingColor": "#B388FF",
+        "closedMovingColor": "#FB923C",
+        "hingeColor": "#FDE047",
+        "baseOpenOpacity": 0.2,
+        "baseClosedOpacity": 0.24,
+        "note": "Im Unterschiede-Modus wird die geschlossene Struktur über eine Ankerdomäne auf die offene Struktur ausgerichtet. Dadurch tritt die Domänenbewegung zur Maltose hin stärker hervor."
       }
     }
   ]

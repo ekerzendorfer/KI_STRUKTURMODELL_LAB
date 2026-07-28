@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.8.1
+/* KI-Strukturmodell-Labor v0.8.2
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.8.1: allgemeiner Unterschiede-Modus geschärft. */
+   v0.8.2: MBP-Unterschiede als Domänenbewegung. */
 
-const APP_VERSION = "0.8.1";
+const APP_VERSION = "0.8.2";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -581,16 +581,25 @@ async function loadCurrentExample(force = false) {
         (!isStatePairExample(currentExample) || currentView === "overlay" || currentView === "differences");
 
       if (shouldAlignPrediction) {
-        const alignment = alignMobileToReference(predPdb, expPdb, currentExample.differenceThreshold || 2.0);
+        const useMbpDomainMotion = isMbpDomainMotionMode();
+        const motionCfg = currentExample.domainMotion || {};
+        const anchorResidues = useMbpDomainMotion ? expandResidueRanges(motionCfg.anchorRanges) : null;
+        const alignment = useMbpDomainMotion
+          ? alignMobileToReferenceByResidues(predPdb, expPdb, currentExample.differenceThreshold || 2.0, anchorResidues)
+          : alignMobileToReference(predPdb, expPdb, currentExample.differenceThreshold || 2.0);
         predPdb = alignment.pdb;
         lastDiffResidues = alignment.diffResidues;
         lastAlignmentStats = alignment;
-        statusLines.push(`Overlay berechnet: ${alignment.pairCount} gemeinsame Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
 
-        if (isStatePairExample(currentExample)) {
-          statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+        if (useMbpDomainMotion) {
+          statusLines.push(`MBP-Unterschiedsmodus: geschlossene Form über ${alignment.fitPairCount || alignment.pairCount} Cα-Paare der Ankerdomäne ausgerichtet.`);
         } else {
-          statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle (" + lastDiffResidues.join(", ") + ")" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+          statusLines.push(`Overlay berechnet: ${alignment.pairCount} gemeinsame Cα-Paare; RMSD ≈ ${alignment.rmsd.toFixed(2)} Å.`);
+          if (isStatePairExample(currentExample)) {
+            statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+          } else {
+            statusLines.push(`Abweichungsmarkierung: ${lastDiffResidues.length ? lastDiffResidues.length + " Bereiche oberhalb der Schwelle (" + lastDiffResidues.join(", ") + ")" : "keine Bereiche > " + (currentExample.differenceThreshold || 2.0) + " Å"}.`);
+          }
         }
       }
       const predModel = viewer.addModel(predPdb, "pdb");
@@ -641,7 +650,10 @@ async function loadCurrentExample(force = false) {
     }
   }
 
-  if ((currentView === "differences" || currentView === "overlay") && els.showDifferenceResidues.checked) {
+  if (isMbpDomainMotionMode()) {
+    const mbpMotionInfo = highlightMbpDomainMotion();
+    if (mbpMotionInfo?.message) statusLines.push(mbpMotionInfo.message);
+  } else if ((currentView === "differences" || currentView === "overlay") && els.showDifferenceResidues.checked) {
     highlightDifferences();
     if (currentView === "differences" && !isStatePairExample(currentExample)) {
       const diffSummary = getDifferenceSummaryText();
@@ -967,6 +979,38 @@ function shiftResidueNumbers(lines, offset) {
 
 function isAtomLine(line) { const s = String(line || "").trimStart(); return s.startsWith("ATOM") || s.startsWith("HETATM"); }
 
+function isMbpDomainMotionMode() {
+  return currentView === "differences" &&
+    currentExample?.id === "mbp" &&
+    !!currentExample?.domainMotion?.enabled;
+}
+
+function expandResidueRanges(ranges) {
+  const out = [];
+  for (const r of ranges || []) {
+    const start = Array.isArray(r) ? Number(r[0]) : Number(r.start);
+    const end = Array.isArray(r) ? Number(r[1]) : Number(r.end);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    const a = Math.min(start, end);
+    const b = Math.max(start, end);
+    for (let n = a; n <= b; n++) out.push(n);
+  }
+  return Array.from(new Set(out)).sort((a, b) => a - b);
+}
+
+function residueSelectorFromRanges(ranges) {
+  return expandResidueRanges(ranges);
+}
+
+function atomsForResidues(pdb, residues, atomName = null) {
+  const wanted = new Set((residues || []).map(Number));
+  return parseAtoms(pdb).filter(a =>
+    a.line.trimStart().startsWith("ATOM") &&
+    wanted.has(Number(a.resi)) &&
+    (!atomName || a.atom === atomName)
+  );
+}
+
 function applyModelStyle(model, struct, role) {
   const color = struct.color || (role === "experiment" ? "#2E7D32" : "#EF6C00");
   let opacity = role === "experiment" ? 0.82 : 0.9;
@@ -974,7 +1018,10 @@ function applyModelStyle(model, struct, role) {
   // Im allgemeinen Unterschiede-Modus werden die Gesamtmodelle bewusst
   // blasser dargestellt; die hervorgehobenen Abweichungen treten dadurch
   // klarer hervor. MBP bekommt später eine eigene Domänenbewegungslogik.
-  if (currentView === "differences" && !isStatePairExample(currentExample)) {
+  if (isMbpDomainMotionMode()) {
+    const cfg = currentExample.domainMotion || {};
+    opacity = role === "experiment" ? Number(cfg.baseOpenOpacity || 0.20) : Number(cfg.baseClosedOpacity || 0.24);
+  } else if (currentView === "differences" && !isStatePairExample(currentExample)) {
     opacity = role === "experiment" ? 0.32 : 0.42;
   }
 
@@ -1060,6 +1107,21 @@ function getDifferenceSummaryText() {
 function updateViewSpecificInterpretation() {
   if (!els.predictionModelNote && !els.modelInterpretation) return;
 
+  if (isMbpDomainMotionMode()) {
+    const cfg = currentExample.domainMotion || {};
+    if (els.predictionModelNote) {
+      els.predictionModelNote.textContent = "MBP-Unterschiede: Domänenbewegung / induced fit.";
+    }
+    if (els.modelInterpretation) {
+      els.modelInterpretation.textContent =
+        "In dieser Ansicht wird die geschlossene MBP-Struktur über eine Ankerdomäne auf die offene Struktur ausgerichtet. " +
+        "Dadurch bleibt ein Teil des Proteins als Bezugspunkt stehen, während die bewegte Domäne deutlich hervortritt. " +
+        "Die Maltose ist hellblau dargestellt; die Bindetaschen zeigen, wie sich das Protein um den Liganden schließt. " +
+        "Die Darstellung ist keine Animation und zeigt keinen realen Bewegungsweg, sondern die beiden experimentellen Endzustände.";
+    }
+    return;
+  }
+
   if (currentView === "differences" && !isStatePairExample(currentExample) && lastAlignmentStats) {
     const threshold = currentExample?.differenceThreshold || 2.0;
     if (els.predictionModelNote) {
@@ -1075,6 +1137,50 @@ function updateViewSpecificInterpretation() {
   } else {
     updatePredictionModelNote();
   }
+}
+
+function styleDomain(model, residues, color, opacity = 0.88, thickness = 0.72) {
+  if (!model || !residues?.length) return;
+  const style = {
+    cartoon: { color, opacity, thickness, arrows: true },
+    stick: { color, radius: 0.08, opacity: Math.min(1, opacity + 0.08) }
+  };
+  if (typeof model.addStyle === "function") {
+    model.addStyle({ hetflag: false, resi: residues }, style);
+  } else {
+    model.setStyle({ hetflag: false, resi: residues }, style);
+  }
+}
+
+function highlightMbpDomainMotion() {
+  if (!isMbpDomainMotionMode()) return null;
+  const cfg = currentExample.domainMotion || {};
+  const open = loadedModels.experiment;
+  const closed = loadedModels.prediction;
+  if (!open?.model || !closed?.model) {
+    return { ok: false, message: "MBP-Unterschiedsmodus: offene und geschlossene Struktur müssen geladen sein." };
+  }
+
+  const movingResidues = residueSelectorFromRanges(cfg.movingRanges);
+  const hingeResidues = residueSelectorFromRanges(cfg.hingeRanges);
+  const openMovingColor = cfg.openMovingColor || "#B388FF";
+  const closedMovingColor = cfg.closedMovingColor || "#FB923C";
+  const hingeColor = cfg.hingeColor || "#FDE047";
+
+  styleDomain(open.model, movingResidues, openMovingColor, 0.88, 0.74);
+  styleDomain(closed.model, movingResidues, closedMovingColor, 0.94, 0.78);
+  styleDomain(open.model, hingeResidues, hingeColor, 0.98, 0.86);
+  styleDomain(closed.model, hingeResidues, hingeColor, 0.98, 0.86);
+
+  if (cfg.showHingeMarkers !== false) {
+    addPocketCaMarkers(open.pdb, hingeResidues, hingeColor, 0.50, 0.85);
+    addPocketCaMarkers(closed.pdb, hingeResidues, hingeColor, 0.50, 0.85);
+  }
+
+  return {
+    ok: true,
+    message: "MBP-Domänenbewegung hervorgehoben: bewegte Domäne offen violett, geschlossen orange; Hinge-Bereiche gelb."
+  };
 }
 
 function highlightDifferences() {
@@ -1443,6 +1549,45 @@ function caMap(pdb) {
     }
   }
   return map;
+}
+
+function alignMobileToReferenceByResidues(mobilePdb, refPdb, threshold = 2.0, fitResidues = null) {
+  const mobileMap = caMap(mobilePdb);
+  const refMap = caMap(refPdb);
+  const allPairs = [];
+  for (const [resi, m] of mobileMap.entries()) {
+    if (refMap.has(resi)) allPairs.push({ resi, mobile: m, ref: refMap.get(resi) });
+  }
+  if (allPairs.length < 4) throw new Error("Zu wenige gemeinsame Cα-Atome für eine Überlagerung.");
+
+  const fitSet = fitResidues?.length ? new Set(fitResidues.map(Number)) : null;
+  const fitPairs = fitSet ? allPairs.filter(p => fitSet.has(Number(p.resi))) : allPairs;
+  if (fitPairs.length < 4) throw new Error("Zu wenige gemeinsame Cα-Atome in der gewählten Ankerdomäne.");
+
+  const cm = centroid(fitPairs.map(p => p.mobile));
+  const cr = centroid(fitPairs.map(p => p.ref));
+  const H = [[0,0,0],[0,0,0],[0,0,0]];
+  for (const p of fitPairs) {
+    const a = sub(p.mobile, cm);
+    const b = sub(p.ref, cr);
+    for (let i=0;i<3;i++) for (let j=0;j<3;j++) H[i][j] += a[i] * b[j];
+  }
+  const q = largestQuaternion(H);
+  const R = quatToRot(q);
+
+  const transformed = transformPdb(mobilePdb, R, cm, cr);
+
+  const diffResidues = [];
+  let sumSq = 0;
+  for (const p of allPairs) {
+    const tm = add(matVec(R, sub(p.mobile, cm)), cr);
+    const d = dist(tm, p.ref);
+    sumSq += d * d;
+    if (d > threshold) diffResidues.push(p.resi);
+  }
+  const rmsd = Math.sqrt(sumSq / allPairs.length);
+
+  return { pdb: transformed, pairCount: allPairs.length, fitPairCount: fitPairs.length, diffResidues, rmsd };
 }
 
 function alignMobileToReference(mobilePdb, refPdb, threshold = 2.0) {

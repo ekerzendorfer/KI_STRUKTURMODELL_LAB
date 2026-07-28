@@ -1,26 +1,32 @@
-# KI-Strukturmodell-Labor v0.8.1
+# KI-Strukturmodell-Labor v0.8.2
 
-## Ziel von v0.8.1
+## Ziel von v0.8.2
 
-Diese Version wertet den allgemeinen Unterschiede-Modus für Trp-cage, Ubiquitin und Calmodulin didaktisch auf.
+Diese Version ergänzt für MBP einen eigenen Unterschiede-Modus. Der Modus soll die Domänenbewegung beim Übergang von offener zu geschlossener Struktur didaktisch besser lesbar machen.
 
-MBP bleibt in dieser Version bewusst noch ohne eigene Domänenbewegungslogik. Diese folgt als separates, kleineres Arbeitspaket.
+## Neu bei MBP
 
-## Neu
+Die Schaltfläche **Unterschiede** bedeutet bei MBP nun:
 
-- In der Ansicht **Unterschiede** werden die Gesamtmodelle blasser dargestellt.
-- Abweichende Bereiche treten durch rot-orange Hervorhebung stärker hervor.
-- Zusätzlich werden im Unterschiede-Modus Cα-Punkte markiert, damit beim Klick auf „Unterschiede“ sichtbar etwas im Viewer passiert.
-- Das Textfeld unter dem Viewer erklärt jetzt klarer, was die hervorgehobenen Bereiche bedeuten.
-- Residuen werden im Status und Textfeld zu übersichtlichen Bereichen zusammengefasst.
+```text
+Domänenbewegung / induced fit sichtbar machen
+```
 
-## Wichtig
+Die Darstellung ist bewusst statisch:
 
-Die Markierung ist kein „richtig/falsch“-Urteil. Sie zeigt nur, wo Modell und Vergleichsstruktur nach der Überlagerung am deutlichsten auseinanderliegen.
+- Die geschlossene Struktur wird über eine **Ankerdomäne** auf die offene Struktur ausgerichtet.
+- Die **bewegte Domäne** wird in der offenen Form violett und in der geschlossenen Form orange hervorgehoben.
+- Die **Hinge-/Scharnierbereiche** werden gelb markiert.
+- Die Maltose bleibt hellblau.
+- Die Bindetaschen bleiben sichtbar.
+
+## Didaktische Einordnung
+
+Diese Ansicht ist keine Animation und zeigt keinen realen Bewegungsweg. Sie stellt zwei experimentelle Endzustände so gegenüber, dass die Domänenbewegung besser erkennbar wird.
 
 ## Update
 
-Für ein Update auf v0.8.1 ersetzen:
+Für ein Update auf v0.8.2 ersetzen:
 
 ```text
 index.html
