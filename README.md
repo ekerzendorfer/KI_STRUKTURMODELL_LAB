@@ -1,23 +1,23 @@
-# KI-Strukturmodell-Labor v0.8.3
+# KI-Strukturmodell-Labor v0.8.4
 
-## Ziel von v0.8.3
+## Ziel von v0.8.4
 
-Diese Version schärft den MBP-Unterschiedsmodus didaktisch nach.
+Diese Version zieht die Aufgaben und Hinweise didaktisch nach. Der in v0.8.1–v0.8.3 verbesserte **Unterschiede-Modus** wird nun in allen Beispielen ausdrücklich als Beobachtungs- und Deutungshilfe verankert.
 
 ## Neu
 
-- Die bewegten MBP-Domänen werden im Unterschiede-Modus als **reines Bändermodell** hervorgehoben.
-- Seitenketten werden dort nicht mehr über die ganze Domäne eingeblendet.
-- Seitenketten bleiben auf die **Bindetasche** beschränkt, wo sie didaktisch wichtig sind.
-- Die MBP-Aufgaben weisen nun ausdrücklich auf den Unterschiede-Modus hin.
+- Trp-cage: Unterschiede als Hinweis auf Beweglichkeit und Modellgrenzen.
+- Ubiquitin: wenige Unterschiede als positive Beobachtung bei stabilem Referenzprotein.
+- Calmodulin: Unterschiede als Hinweis auf Zustand, Calcium-Kontext, Endbereiche und Domänenorientierung.
+- MBP: Unterschiede als statische Domänenbewegungsansicht für induced fit.
 
-## Didaktische Begründung
+## Didaktischer Standardsatz
 
-Die Domänenbewegung soll zuerst als große Formänderung erkannt werden. Zu viele Seitenketten außerhalb der Bindetasche verdecken diese Bewegung eher. In der Bindetasche bleiben Seitenketten sinnvoll, weil dort die Wechselwirkung mit der Maltose sichtbar wird.
+Die Markierungen im Unterschiede-Modus bedeuten nicht automatisch „Fehler“. Sie zeigen Bereiche, in denen Modell und Vergleichsstruktur nach der Überlagerung besonders stark voneinander abweichen.
 
 ## Update
 
-Für ein Update auf v0.8.3 ersetzen:
+Für ein Update auf v0.8.4 ersetzen:
 
 ```text
 index.html

@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.8.3
+/* KI-Strukturmodell-Labor v0.8.4
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.8.3: MBP-Unterschiede didaktisch nachgeschärft. */
+   v0.8.4: Aufgaben zum Unterschiede-Modus nachgeschärft. */
 
-const APP_VERSION = "0.8.3";
+const APP_VERSION = "0.8.4";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";

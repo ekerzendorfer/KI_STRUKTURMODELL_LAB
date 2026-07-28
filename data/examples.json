@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.8.3",
-    "description": "Version 0.8.3 schärft den MBP-Unterschiedsmodus didaktisch nach: Domänenbewegung als reines Bändermodell, Seitenketten nur im Bereich der Bindetasche.",
+    "version": "0.8.4",
+    "description": "Version 0.8.4 zieht die Aufgaben und Hinweise didaktisch nach: Der Unterschiede-Modus wird in allen Beispielen explizit als Beobachtungs- und Deutungshilfe verankert.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -111,19 +111,20 @@
       },
       "local_note": "v0.4.1 nutzt lokale experimentelle Strukturen, zwei ColabFold-Modelle und optional ein didaktisches Störmodell. Fehlt didactic_decoy.pdb, bleiben bestes Modell und Vergleichsmodell normal nutzbar.",
       "observation_prompts": [
-        "Betrachte zuerst das reine Bändermodell: Wirkt das Peptid eher geordnet oder stark ausgestreckt?",
-        "Wechsle zu Bänder + Seitenketten und suche auffällige Seitenketten, besonders den Tryptophan-Rest.",
-        "Vergleiche die Darstellung mit der Sequenz: Aus nur 20 Aminosäuren entsteht bereits eine erkennbare räumliche Form.",
-        "Formuliere, warum kleine Peptide gleichzeitig Struktur ausbilden und trotzdem beweglich bleiben können."
+        "1. Betrachte zuerst das reine Bändermodell: Wirkt das Peptid kompakt, geordnet oder eher beweglich?",
+        "2. Wechsle zu Bänder + Seitenketten und suche auffällige Seitenketten, besonders den Tryptophan-Rest.",
+        "3. Nutze danach „offen + Modell“/Overlay und anschließend „Unterschiede“.",
+        "4. Achte auf rot-orange markierte Abschnitte: Sie zeigen Bereiche, in denen die Modelle nach der Überlagerung besonders stark voneinander abweichen.",
+        "5. Formuliere, warum solche Abweichungen bei einem kleinen Peptid nicht automatisch ein Fehler sein müssen."
       ],
       "model_limit": "Trp-cage ist sehr klein und wurde experimentell als NMR-Ensemble bestimmt. Das aktuell angezeigte Modell ist daher nur ein Vertreter eines beweglichen Strukturensembles, nicht die eine endgültige Peptidform.",
-      "protocol_focus": "Mini-Protein: Experiment und KI-Modell werden lokal vergleichbar; das selbst erzeugte ColabFold-Modell kann später importiert werden.",
+      "protocol_focus": "Beschreibe die Gesamtform, nutze die Ansicht „Unterschiede“ zur Lokalisierung auffälliger Abschnitte und erkläre, warum kleine Peptide besonders beweglich sein können.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
       "differenceThreshold": 2.0,
       "tasks": {
         "observe": "Betrachte Experiment, ColabFold-Modell und didaktisches Störmodell. Beschreibe zuerst nur die Gesamtform: kompakt, aufgeklappt, ähnlich oder deutlich anders?",
-        "compare": "Schalte auf Overlay/Unterschiede. Welche Abschnitte weichen besonders stark ab? Prüfe, ob diese Abweichungen bei einem kleinen, flexiblen Peptid plausibel wirken.",
-        "limit": "Formuliere eine Modellgrenze: Warum ist ein einzelnes Modell bei einem kleinen Peptid nur eine Momentaufnahme oder ein Strukturvorschlag?"
+        "compare": "Nutze die Ansicht „Unterschiede“. Welche Abschnitte werden rot-orange hervorgehoben? Erkläre, warum diese Markierungen bei einem kleinen, flexiblen Peptid als Hinweis auf Beweglichkeit und Modellgrenzen gelesen werden können.",
+        "limit": "Formuliere eine Modellgrenze: Warum ist ein einzelnes Modell bei einem kleinen Peptid nur eine Momentaufnahme oder ein Strukturvorschlag und nicht die eine endgültige Form?"
       }
     },
     {
@@ -235,18 +236,19 @@
       "local_note": "v0.4.1 nutzt lokale experimentelle Strukturen, zwei ColabFold-Modelle und optional ein didaktisches Störmodell. Fehlt didactic_decoy.pdb, bleiben bestes Modell und Vergleichsmodell normal nutzbar.",
       "differenceThreshold": 2.0,
       "observation_prompts": [
-        "Betrachte das Bändermodell und beschreibe die Grundfaltung: kompakt, ausgedehnt, helikal, faltblattreich?",
-        "Wechsle zwischen Cartoon und Bänder + Seitenketten: Welche zusätzlichen Informationen liefern die Seitenketten?",
-        "Teste später ein hochgeladenes KI-Modell: Was bleibt in der Grundfaltung ähnlich, was weicht ab?",
-        "Achte besonders auf Endbereiche und Schleifen: Dort sind Unterschiede und Beweglichkeit oft deutlicher sichtbar."
+        "1. Betrachte das Bändermodell und beschreibe die Grundfaltung: kompakt, helikal, faltblattreich?",
+        "2. Vergleiche Experiment und bestes Modell zuerst im normalen Overlay.",
+        "3. Nutze anschließend „Unterschiede“: Wenn nur wenige Bereiche markiert werden, ist gerade das die wichtige Beobachtung.",
+        "4. Achte besonders auf Endbereiche und Schleifen: Dort sind kleine Unterschiede und Beweglichkeit oft am ehesten sichtbar.",
+        "5. Deute die Markierungen nicht als einfache Fehlerliste, sondern als Hinweis auf lokal abweichende Bereiche."
       ],
       "model_limit": "Ubiquitin ist ein sehr stabiles Referenzprotein. Eine KI-Vorhersage kann die Grundfaltung sehr gut treffen; experimentelle Strukturen liefern aber weiterhin Messdetails, flexible Bereiche, Lösungsmittel-/Kristallinformationen und konkrete Zustände.",
-      "protocol_focus": "Referenzprotein: lokaler Standardvergleich Experiment vs. ColabFold-Modell; eigenes ColabFold-Ergebnis kann zusätzlich importiert werden.",
+      "protocol_focus": "Nutze Overlay und „Unterschiede“, um zu zeigen, dass Ubiquitin als stabiles Referenzprotein eine sehr gut vergleichbare Grundfaltung besitzt; diskutiere trotzdem Grenzen der Aussage.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
       "tasks": {
         "observe": "Vergleiche Experiment und bestes ColabFold-Modell. Achte darauf, wie stark Grundfaltung, Helix und β-Faltblatt übereinstimmen.",
-        "compare": "Wechsle zum Vergleichsmodell oder Decoy. Ist das alternative Modell wirklich schlechter, oder zeigt es nur kleine Modellvariationen?",
-        "limit": "Formuliere eine Modellgrenze: Was sagt ein sehr gutes Overlay über die Modellqualität aus – und was sagt es noch nicht über Funktion, Dynamik oder Wechselwirkungen aus?"
+        "compare": "Wechsle in die Ansicht „Unterschiede“. Werden nur wenige Bereiche hervorgehoben? Dann ist das didaktisch wichtig: Bei einem stabilen Referenzprotein kann gerade die geringe Abweichung zeigen, wie gut die Grundfaltung getroffen wird.",
+        "limit": "Formuliere eine Modellgrenze: Was sagt ein sehr gutes Overlay über die Modellqualität aus – und was sagt es noch nicht über Funktion, Dynamik, Bindungspartner oder konkrete experimentelle Bedingungen aus?"
       }
     },
     {
@@ -408,20 +410,20 @@
       "future": "AFDB-Modell und AF3-Ca²⁺-Modell sind als optionale Vergleichspartner vorbereitet.",
       "local_note": "v0.5.2 erwartet die lokale experimentelle Datei unter structures/calmodulin/experimental_ca_bound.pdb. Zusätzlich können af2_best.pdb, af2_alternative.pdb, af2_alphafold_db.pdb, af3_ca_model.pdb und optional didactic_decoy.pdb verglichen werden. Einzelansichten der KI-/Vergleichsmodelle werden bereits an der experimentellen Referenz ausgerichtet, damit sie beim Umschalten ähnlich liegen wie im Overlay.",
       "observation_prompts": [
-        "Starte mit hellem Hintergrund und Bänder-/Cartoon-Darstellung.",
-        "Schalte Ionen/Liganden ein und lokalisiere die vier Ca²⁺-Ionen.",
-        "Wechsle nacheinander zwischen ColabFold best, AlphaFold-DB und AF3 mit Ca²⁺.",
-        "Achte besonders auf N-Terminus, Linker-/Randbereiche und die Orientierung der beiden Domänen.",
-        "Nutze die Unterschiede nicht als einfache Fehlerliste, sondern als Anlass zur Frage: Welchen Zustand zeigt welches Modell?"
+        "1. Starte mit hellem Hintergrund und Bänder-/Cartoon-Darstellung.",
+        "2. Schalte Ionen/Liganden ein und lokalisiere die vier Ca²⁺-Ionen.",
+        "3. Wechsle nacheinander zwischen ColabFold best, AlphaFold-DB und AF3 mit Ca²⁺.",
+        "4. Nutze jeweils die Ansicht „Unterschiede“, um N-Terminus, Linker-/Randbereiche und Domänenorientierung besser zu erkennen.",
+        "5. Deute die markierten Bereiche als Hinweis auf Zustand, Kontext und Flexibilität – nicht als einfache Fehlerliste."
       ],
       "model_limit": "Die Modellgrenze ist hier nicht nur Genauigkeit. Entscheidend ist der biologische Kontext: Calcium-Ionen, flexible Enden, Domänenorientierung und experimenteller Zustand beeinflussen den Vergleich.",
-      "protocol_focus": "Vergleiche die vier Modelltypen und erkläre, warum AF3 mit Ca²⁺ trotz besserem Kontext nicht automatisch identisch mit der experimentellen Struktur sein muss.",
+      "protocol_focus": "Vergleiche die Modelltypen mit besonderem Blick auf die Ansicht „Unterschiede“ und erkläre, warum Ca²⁺-Kontext, flexible Enden und Domänenorientierung die Interpretation bestimmen.",
       "colab_url": "https://colab.research.google.com/github/ekerzendorfer/KI_STRUKTURMODELL_LAB/blob/main/colab/colabfold_template.ipynb",
       "differenceThreshold": 3.0,
       "tasks": {
         "observe": "Schalte Ionen/Liganden ein und lokalisiere die vier Ca²⁺-Ionen. Vergleiche dann 1CLL, AF2/ColabFold, AlphaFold-DB und AF3 mit Ca²⁺.",
-        "compare": "Prüfe, ob AF3 mit Ca²⁺ dem experimentellen Ca²⁺-gebundenen Zustand näherkommt. Achte besonders auf N-Terminus, Linker und Domänenorientierung.",
-        "limit": "Formuliere eine Modellgrenze: Warum ist Calmodulin kein einfacher Fall von „richtig oder falsch“, sondern ein Beispiel für Zustand, Kontext und Flexibilität?"
+        "compare": "Nutze die Ansicht „Unterschiede“ für jedes Vergleichsmodell. Welche Bereiche fallen besonders auf: Enden, Linker oder Domänenorientierung? Prüfe, ob AF3 mit Ca²⁺ dem experimentellen Ca²⁺-gebundenen Zustand in bestimmten Bereichen näherkommt.",
+        "limit": "Formuliere eine Modellgrenze: Warum ist Calmodulin kein einfacher Fall von „richtig oder falsch“, sondern ein Beispiel für Zustand, Kontext, Calcium-Bindung und Flexibilität?"
       }
     },
     {
@@ -474,12 +476,13 @@
         "1. Klicke auf „offen“: Betrachte zuerst 1OMP und beschreibe die geöffnete Bindungsspalte.",
         "2. Aktiviere „Bindetasche hervorheben“: Die spätere Binderegion wird in der offenen Form hellviolett markiert.",
         "3. Klicke auf „geschlossen“: Betrachte 1ANF einzeln. Die Maltose ist hellblau, die geschlossene Bindetasche orange markiert.",
-        "4. Nutze „offen + geschlossen“ für den Gesamteindruck der beiden Endzustände.",
-        "5. Nutze anschließend „Unterschiede“: Die bewegte Domäne wird als Bändermodell hervorgehoben; Seitenketten werden nur in der Bindetasche gezeigt.",
-        "6. Formuliere, warum MBP ein Beispiel für induced fit ist und warum das starre Schlüssel-Schloss-Modell hier nicht ausreicht."
+        "4. Nutze „offen + geschlossen“ für den Gesamteindruck der beiden experimentellen Endzustände.",
+        "5. Nutze anschließend „Unterschiede“: Eine Ankerdomäne bleibt als Bezugspunkt stehen, die bewegte Domäne tritt als Bändermodell hervor.",
+        "6. Achte darauf: Diese Darstellung ist keine Animation. Sie macht nur den Unterschied zwischen zwei experimentellen Zuständen sichtbar.",
+        "7. Formuliere, warum MBP ein Beispiel für induced fit ist und warum das starre Schlüssel-Schloss-Modell hier nicht ausreicht."
       ],
       "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
-      "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und nutze den Unterschiede-Modus, um die Domänenbewegung als Beispiel für induced fit zu erklären.",
+      "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und nutze den Unterschiede-Modus, um die Domänenbewegung als Beispiel für induced fit zu erklären. Halte ausdrücklich fest, dass kein realer Bewegungsweg berechnet wird.",
       "tasks": {
         "observe": "Betrachte zuerst die offene Form. Achte auf die geöffnete Spalte zwischen den Domänen und markiere anschließend die offene Bindetasche.",
         "compare": "Vergleiche zuerst „offen + geschlossen“. Nutze danach „Unterschiede“, um die Domänenbewegung klarer zu erkennen: Die bewegte Domäne ist als Bändermodell hervorgehoben, Seitenketten erscheinen nur dort, wo sie für die Bindetasche wichtig sind.",
