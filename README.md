@@ -1,32 +1,23 @@
-# KI-Strukturmodell-Labor v0.8.2
+# KI-Strukturmodell-Labor v0.8.3
 
-## Ziel von v0.8.2
+## Ziel von v0.8.3
 
-Diese Version ergänzt für MBP einen eigenen Unterschiede-Modus. Der Modus soll die Domänenbewegung beim Übergang von offener zu geschlossener Struktur didaktisch besser lesbar machen.
+Diese Version schärft den MBP-Unterschiedsmodus didaktisch nach.
 
-## Neu bei MBP
+## Neu
 
-Die Schaltfläche **Unterschiede** bedeutet bei MBP nun:
+- Die bewegten MBP-Domänen werden im Unterschiede-Modus als **reines Bändermodell** hervorgehoben.
+- Seitenketten werden dort nicht mehr über die ganze Domäne eingeblendet.
+- Seitenketten bleiben auf die **Bindetasche** beschränkt, wo sie didaktisch wichtig sind.
+- Die MBP-Aufgaben weisen nun ausdrücklich auf den Unterschiede-Modus hin.
 
-```text
-Domänenbewegung / induced fit sichtbar machen
-```
+## Didaktische Begründung
 
-Die Darstellung ist bewusst statisch:
-
-- Die geschlossene Struktur wird über eine **Ankerdomäne** auf die offene Struktur ausgerichtet.
-- Die **bewegte Domäne** wird in der offenen Form violett und in der geschlossenen Form orange hervorgehoben.
-- Die **Hinge-/Scharnierbereiche** werden gelb markiert.
-- Die Maltose bleibt hellblau.
-- Die Bindetaschen bleiben sichtbar.
-
-## Didaktische Einordnung
-
-Diese Ansicht ist keine Animation und zeigt keinen realen Bewegungsweg. Sie stellt zwei experimentelle Endzustände so gegenüber, dass die Domänenbewegung besser erkennbar wird.
+Die Domänenbewegung soll zuerst als große Formänderung erkannt werden. Zu viele Seitenketten außerhalb der Bindetasche verdecken diese Bewegung eher. In der Bindetasche bleiben Seitenketten sinnvoll, weil dort die Wechselwirkung mit der Maltose sichtbar wird.
 
 ## Update
 
-Für ein Update auf v0.8.2 ersetzen:
+Für ein Update auf v0.8.3 ersetzen:
 
 ```text
 index.html

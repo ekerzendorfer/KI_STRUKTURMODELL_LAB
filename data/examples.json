@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.8.2",
-    "description": "Version 0.8.2 ergänzt für MBP einen eigenen Unterschiede-Modus: Ausrichtung über eine Ankerdomäne, Hervorhebung der bewegten Domäne und klarere Deutung von induced fit.",
+    "version": "0.8.3",
+    "description": "Version 0.8.3 schärft den MBP-Unterschiedsmodus didaktisch nach: Domänenbewegung als reines Bändermodell, Seitenketten nur im Bereich der Bindetasche.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -471,18 +471,19 @@
       },
       "local_note": "v0.7.1 zeigt MBP beim Laden zunächst als offene ligandfreie Struktur. Die geschlossene maltosegebundene Struktur ist über Modell/Vergleich bzw. Overlay erreichbar und wird klar als experimenteller Vergleichszustand gekennzeichnet.",
       "observation_prompts": [
-        "1. Klicke auf „offen“: Betrachte zuerst nur 1OMP und beschreibe die beiden Domänen.",
-        "2. Aktiviere „Bindetasche hervorheben“ und beobachte, wo der spätere Bindungsbereich liegt.",
-        "3. Klicke auf „geschlossen“: Betrachte 1ANF einzeln. Die Maltose wird deutlich hervorgehoben.",
-        "4. Vergleiche offen ↔ geschlossen oder nutze „Unterschiede“, um zu sehen, wie sich das Protein um die Maltose schließt.",
-        "5. Formuliere, warum dieses Beispiel induced fit besser zeigt als ein starres Schlüssel-Schloss-Modell."
+        "1. Klicke auf „offen“: Betrachte zuerst 1OMP und beschreibe die geöffnete Bindungsspalte.",
+        "2. Aktiviere „Bindetasche hervorheben“: Die spätere Binderegion wird in der offenen Form hellviolett markiert.",
+        "3. Klicke auf „geschlossen“: Betrachte 1ANF einzeln. Die Maltose ist hellblau, die geschlossene Bindetasche orange markiert.",
+        "4. Nutze „offen + geschlossen“ für den Gesamteindruck der beiden Endzustände.",
+        "5. Nutze anschließend „Unterschiede“: Die bewegte Domäne wird als Bändermodell hervorgehoben; Seitenketten werden nur in der Bindetasche gezeigt.",
+        "6. Formuliere, warum MBP ein Beispiel für induced fit ist und warum das starre Schlüssel-Schloss-Modell hier nicht ausreicht."
       ],
       "model_limit": "Das einfache Schlüssel-Schloss-Modell erklärt nur die Passung. MBP zeigt zusätzlich: Die Bindung kann eine deutliche Konformationsänderung auslösen oder stabilisieren. Ein einzelnes Strukturmodell zeigt daher nur einen Zustand.",
       "protocol_focus": "Beschreibe offene und geschlossene Struktur, lokalisiere Maltose und nutze den Unterschiede-Modus, um die Domänenbewegung als Beispiel für induced fit zu erklären.",
       "tasks": {
-        "observe": "Betrachte zuerst 1OMP ohne Maltose: Wo liegen die beiden Domänen, und wie offen wirkt die Bindetasche? Aktiviere dann die Bindetasche.",
-        "compare": "Nutze „offen + geschlossen“ für den ersten Gesamteindruck und danach „Unterschiede“. Im Unterschiede-Modus bleibt eine Domäne als Bezugspunkt stehen; die bewegte Domäne zeigt, wie sich MBP beim Schließen um die Maltose verändert.",
-        "limit": "Formuliere eine Modellgrenze: Warum ist Schlüssel-Schloss als Einstieg hilfreich, aber für MBP unvollständig?"
+        "observe": "Betrachte zuerst die offene Form. Achte auf die geöffnete Spalte zwischen den Domänen und markiere anschließend die offene Bindetasche.",
+        "compare": "Vergleiche zuerst „offen + geschlossen“. Nutze danach „Unterschiede“, um die Domänenbewegung klarer zu erkennen: Die bewegte Domäne ist als Bändermodell hervorgehoben, Seitenketten erscheinen nur dort, wo sie für die Bindetasche wichtig sind.",
+        "limit": "Erkläre, warum die Darstellung kein Bewegungsfilm ist: Sie zeigt zwei experimentelle Endzustände. Trotzdem macht sie sichtbar, dass die Passung zur Maltose durch eine Strukturänderung entsteht."
       },
       "differenceThreshold": 4.0,
       "structures": [
@@ -623,7 +624,9 @@
         "hingeColor": "#FDE047",
         "baseOpenOpacity": 0.2,
         "baseClosedOpacity": 0.24,
-        "note": "Im Unterschiede-Modus wird die geschlossene Struktur über eine Ankerdomäne auf die offene Struktur ausgerichtet. Dadurch tritt die Domänenbewegung zur Maltose hin stärker hervor."
+        "note": "Im Unterschiede-Modus werden die bewegten Domänen als reine Bänder hervorgehoben. Seitenketten bleiben auf die Bindetasche beschränkt, damit die Domänenbewegung übersichtlich bleibt.",
+        "domainAsCartoonOnly": true,
+        "showMovingDomainSidechains": false
       }
     }
   ]

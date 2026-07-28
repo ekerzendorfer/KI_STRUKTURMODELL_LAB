@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.8.2
+/* KI-Strukturmodell-Labor v0.8.3
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.8.2: MBP-Unterschiede als Domänenbewegung. */
+   v0.8.3: MBP-Unterschiede didaktisch nachgeschärft. */
 
-const APP_VERSION = "0.8.2";
+const APP_VERSION = "0.8.3";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -1115,8 +1115,8 @@ function updateViewSpecificInterpretation() {
     if (els.modelInterpretation) {
       els.modelInterpretation.textContent =
         "In dieser Ansicht wird die geschlossene MBP-Struktur über eine Ankerdomäne auf die offene Struktur ausgerichtet. " +
-        "Dadurch bleibt ein Teil des Proteins als Bezugspunkt stehen, während die bewegte Domäne deutlich hervortritt. " +
-        "Die Maltose ist hellblau dargestellt; die Bindetaschen zeigen, wie sich das Protein um den Liganden schließt. " +
+        "Dadurch bleibt ein Teil des Proteins als Bezugspunkt stehen, während die bewegte Domäne als übersichtliches Bändermodell hervortritt. " +
+        "Seitenketten werden bewusst nur im Bereich der Bindetasche gezeigt; die Maltose ist hellblau dargestellt. " +
         "Die Darstellung ist keine Animation und zeigt keinen realen Bewegungsweg, sondern die beiden experimentellen Endzustände.";
     }
     return;
@@ -1139,12 +1139,14 @@ function updateViewSpecificInterpretation() {
   }
 }
 
-function styleDomain(model, residues, color, opacity = 0.88, thickness = 0.72) {
+function styleDomain(model, residues, color, opacity = 0.88, thickness = 0.72, showSidechains = false) {
   if (!model || !residues?.length) return;
   const style = {
-    cartoon: { color, opacity, thickness, arrows: true },
-    stick: { color, radius: 0.08, opacity: Math.min(1, opacity + 0.08) }
+    cartoon: { color, opacity, thickness, arrows: true }
   };
+  if (showSidechains) {
+    style.stick = { color, radius: 0.08, opacity: Math.min(1, opacity + 0.08) };
+  }
   if (typeof model.addStyle === "function") {
     model.addStyle({ hetflag: false, resi: residues }, style);
   } else {
@@ -1167,10 +1169,11 @@ function highlightMbpDomainMotion() {
   const closedMovingColor = cfg.closedMovingColor || "#FB923C";
   const hingeColor = cfg.hingeColor || "#FDE047";
 
-  styleDomain(open.model, movingResidues, openMovingColor, 0.88, 0.74);
-  styleDomain(closed.model, movingResidues, closedMovingColor, 0.94, 0.78);
-  styleDomain(open.model, hingeResidues, hingeColor, 0.98, 0.86);
-  styleDomain(closed.model, hingeResidues, hingeColor, 0.98, 0.86);
+  const showMovingSidechains = !!cfg.showMovingDomainSidechains;
+  styleDomain(open.model, movingResidues, openMovingColor, 0.88, 0.74, showMovingSidechains);
+  styleDomain(closed.model, movingResidues, closedMovingColor, 0.94, 0.78, showMovingSidechains);
+  styleDomain(open.model, hingeResidues, hingeColor, 0.98, 0.86, false);
+  styleDomain(closed.model, hingeResidues, hingeColor, 0.98, 0.86, false);
 
   if (cfg.showHingeMarkers !== false) {
     addPocketCaMarkers(open.pdb, hingeResidues, hingeColor, 0.50, 0.85);
@@ -1179,7 +1182,7 @@ function highlightMbpDomainMotion() {
 
   return {
     ok: true,
-    message: "MBP-Domänenbewegung hervorgehoben: bewegte Domäne offen violett, geschlossen orange; Hinge-Bereiche gelb."
+    message: "MBP-Domänenbewegung hervorgehoben: bewegte Domäne als Bändermodell; Seitenketten nur in der Bindetasche."
   };
 }
 
