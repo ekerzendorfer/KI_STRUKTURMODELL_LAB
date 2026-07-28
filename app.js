@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.13
+/* KI-Strukturmodell-Labor v0.8.0
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.13: offene MBP-Bindetasche kontrastreicher. */
+   v0.8.0: MBP-Visualisierung konsolidiert. */
 
-const APP_VERSION = "0.7.13";
+const APP_VERSION = "0.8.0";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -562,13 +562,17 @@ async function loadCurrentExample(force = false) {
       predPdb = preprocessPdb(predRawPdb, predStruct);
 
       if (currentExample?.bindingSite?.enabled && predStruct.requireLigandForBindingSite) {
-        statusLines.push(`PDB-Diagnose ${APP_VERSION}: geladen aus ${predStruct.file || predStruct.url || "unbekannter Quelle"}`);
-        statusLines.push(formatPdbStats("Roh-PDB", predRawPdb));
-        statusLines.push(formatPdbStats("nach Vorverarbeitung", predPdb));
-        predPdb = rescueLigandFromRawPdb(predPdb, predRawPdb, statusLines);
-        predPdb = ensureBindingLigandPresent(predPdb, statusLines);
-        predPdb = forceFallbackLigandIfNeeded(predPdb, statusLines);
-        statusLines.push(formatPdbStats("final für Viewer", predPdb));
+        const showDiagnostics = !!currentExample.bindingSite.showDiagnostics;
+        const diagLines = showDiagnostics ? statusLines : [];
+        if (showDiagnostics) {
+          statusLines.push(`PDB-Diagnose ${APP_VERSION}: geladen aus ${predStruct.file || predStruct.url || "unbekannter Quelle"}`);
+          statusLines.push(formatPdbStats("Roh-PDB", predRawPdb));
+          statusLines.push(formatPdbStats("nach Vorverarbeitung", predPdb));
+        }
+        predPdb = rescueLigandFromRawPdb(predPdb, predRawPdb, diagLines);
+        predPdb = ensureBindingLigandPresent(predPdb, diagLines);
+        predPdb = forceFallbackLigandIfNeeded(predPdb, diagLines);
+        if (showDiagnostics) statusLines.push(formatPdbStats("final für Viewer", predPdb));
       }
 
       const shouldAlignPrediction =
@@ -603,8 +607,8 @@ async function loadCurrentExample(force = false) {
         statusLines.push("Hinweis: Dieses Modell ist nicht als AlphaFold/ColabFold-Ergebnis gekennzeichnet, sondern dient als didaktisches Vergleichsmodell.");
       } else if (predVariant === "closed_maltose") {
         statusLines.push(currentView === "prediction"
-          ? "Hinweis: Einzelansicht des geschlossenen maltosegebundenen Zustands 1ANF. Für die Domänenbewegung anschließend „offen + geschlossen“ oder „Unterschiede“ wählen."
-          : "Hinweis: 1ANF ist eine zweite experimentelle Struktur. Der Vergleich mit 1OMP zeigt offen ↔ geschlossen und macht induced fit sichtbar.");
+          ? "MBP geschlossen: Maltose hellblau, Bindetasche orange markiert."
+          : "MBP-Vergleich: offen grün, geschlossen orange, Maltose hellblau; Bindetaschen violett/orange.");
       } else if (predVariant === "afdb") {
         statusLines.push("Hinweis: AlphaFold-DB P0DP23 enthält ein zusätzliches Start-Methionin; für den Vergleich mit 1CLL wird es in der App ausgeblendet und die Residuen werden umnummeriert.");
       } else if (predVariant === "af3_ca") {
@@ -1239,7 +1243,7 @@ function highlightBindingSite() {
 
     return {
       ok: true,
-      message: `Bindetasche (offene Einzelansicht) hervorgehoben: ${openPocketResidues.length} Referenzreste aus der geschlossenen Form auf 1OMP übertragen.`
+      message: `Bindetasche offen hervorgehoben: ${openPocketResidues.length} Referenzreste hellviolett markiert.`
     };
   }
 
@@ -1273,7 +1277,7 @@ function highlightBindingSite() {
   if (cfg.useVisibleMarkers) {
     const ligandCenter = centroidOfAtoms(ligandAtoms);
     addSphereMarker(ligandCenter, 2.0, ligandLabelColor, 0.72);
-    addCentroidLabel(ligandAtoms, "Maltose / Ligand", ligandLabelColor);
+    if (cfg.labelLigand) addCentroidLabel(ligandAtoms, "Maltose / Ligand", ligandLabelColor);
     addPocketCaMarkers(closed.pdb, residueNumbers, closedPocketColor, 0.62, 0.86);
     if (cfg.showOnOpenState && loadedModels.experiment?.pdb) {
       addPocketCaMarkers(loadedModels.experiment.pdb, residueNumbers, openPocketColor, 0.56, 0.74);
@@ -1320,7 +1324,7 @@ function highlightBindingSite() {
 
   return {
     ok: true,
-    message: `Bindetasche hervorgehoben: ${ligandResnames} (${ligandAtoms.length} Atome), ${pocketResidues.length} Proteinreste im Umkreis von ${radius} Å.`
+    message: `Bindetasche hervorgehoben: Maltose ${ligandResnames} hellblau; ${pocketResidues.length} Taschenreste markiert.`
   };
 }
 
