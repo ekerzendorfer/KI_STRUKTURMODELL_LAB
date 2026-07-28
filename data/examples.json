@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.8.0",
-    "description": "Version 0.8.0 konsolidiert MBP visuell: keine störende Maltose-Beschriftung, gekürzte Statusmeldungen und klare Farben für Ligand und Bindetaschen.",
+    "version": "0.8.1",
+    "description": "Version 0.8.1 wertet den allgemeinen Unterschiede-Modus für Trp-cage, Ubiquitin und Calmodulin didaktisch auf: blassere Gesamtmodelle, deutlichere Abweichungsmarker und klarere Erläuterung im Textfeld.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [

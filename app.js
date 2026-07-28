@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.8.0
+/* KI-Strukturmodell-Labor v0.8.1
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.8.0: MBP-Visualisierung konsolidiert. */
+   v0.8.1: allgemeiner Unterschiede-Modus geschärft. */
 
-const APP_VERSION = "0.8.0";
+const APP_VERSION = "0.8.1";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";
@@ -643,6 +643,10 @@ async function loadCurrentExample(force = false) {
 
   if ((currentView === "differences" || currentView === "overlay") && els.showDifferenceResidues.checked) {
     highlightDifferences();
+    if (currentView === "differences" && !isStatePairExample(currentExample)) {
+      const diffSummary = getDifferenceSummaryText();
+      if (diffSummary) statusLines.push(diffSummary);
+    }
   }
 
   if (currentExample?.bindingSite?.enabled && els.showPocket?.checked) {
@@ -664,6 +668,7 @@ async function loadCurrentExample(force = false) {
   }
 
   els.viewerHint.textContent = `${currentExample.title}: ${currentExample.core_message}`;
+  updateViewSpecificInterpretation();
   const msg = [...statusLines, ...warnLines].join("\n") || "Bereit.";
   setStatus(msg, warnLines.length ? "warn" : "ok");
 }
@@ -964,7 +969,14 @@ function isAtomLine(line) { const s = String(line || "").trimStart(); return s.s
 
 function applyModelStyle(model, struct, role) {
   const color = struct.color || (role === "experiment" ? "#2E7D32" : "#EF6C00");
-  const opacity = role === "experiment" ? 0.82 : 0.9;
+  let opacity = role === "experiment" ? 0.82 : 0.9;
+
+  // Im allgemeinen Unterschiede-Modus werden die Gesamtmodelle bewusst
+  // blasser dargestellt; die hervorgehobenen Abweichungen treten dadurch
+  // klarer hervor. MBP bekommt später eine eigene Domänenbewegungslogik.
+  if (currentView === "differences" && !isStatePairExample(currentExample)) {
+    opacity = role === "experiment" ? 0.32 : 0.42;
+  }
 
   // Standardmäßig wird nur das Protein selbst dargestellt. HETATM-Datensätze
   // enthalten in Kristallstrukturen oft viele Wassermoleküle; diese würden im
@@ -1016,6 +1028,55 @@ function buildHeteroStyle(color) {
   };
 }
 
+function formatResidueRanges(residues, maxRanges = 8) {
+  const nums = Array.from(new Set((residues || []).map(Number).filter(Number.isFinite))).sort((a, b) => a - b);
+  if (!nums.length) return "keine";
+  const ranges = [];
+  let start = nums[0];
+  let prev = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    const n = nums[i];
+    if (n === prev + 1) {
+      prev = n;
+    } else {
+      ranges.push(start === prev ? String(start) : `${start}–${prev}`);
+      start = prev = n;
+    }
+  }
+  ranges.push(start === prev ? String(start) : `${start}–${prev}`);
+  const shown = ranges.slice(0, maxRanges).join(", ");
+  return ranges.length > maxRanges ? `${shown}, …` : shown;
+}
+
+function getDifferenceSummaryText() {
+  if (!lastAlignmentStats) return "";
+  const threshold = currentExample?.differenceThreshold || 2.0;
+  if (!lastDiffResidues.length) {
+    return `Unterschiede: RMSD ≈ ${lastAlignmentStats.rmsd.toFixed(2)} Å; keine Cα-Bereiche oberhalb von ${threshold} Å.`;
+  }
+  return `Unterschiede: ${lastDiffResidues.length} Residuen/Bereiche oberhalb von ${threshold} Å hervorgehoben (${formatResidueRanges(lastDiffResidues)}).`;
+}
+
+function updateViewSpecificInterpretation() {
+  if (!els.predictionModelNote && !els.modelInterpretation) return;
+
+  if (currentView === "differences" && !isStatePairExample(currentExample) && lastAlignmentStats) {
+    const threshold = currentExample?.differenceThreshold || 2.0;
+    if (els.predictionModelNote) {
+      els.predictionModelNote.textContent = lastDiffResidues.length
+        ? `Unterschiede-Modus: ${lastDiffResidues.length} abweichende Residuen/Bereiche hervorgehoben.`
+        : "Unterschiede-Modus: keine deutlichen Cα-Abweichungen oberhalb der eingestellten Schwelle.";
+    }
+    if (els.modelInterpretation) {
+      els.modelInterpretation.textContent = lastDiffResidues.length
+        ? `In dieser Ansicht werden die Gesamtmodelle bewusst blasser dargestellt. Rot-orange markierte Abschnitte zeigen die Bereiche, in denen Modell und Experiment nach der Überlagerung am stärksten auseinanderliegen. Angezeigt werden Cα-Abweichungen oberhalb von ${threshold} Å (${formatResidueRanges(lastDiffResidues)}). Das ist kein „richtig/falsch“-Urteil, sondern ein Hinweis darauf, welche Strukturabschnitte genauer diskutiert werden sollten.`
+        : `In dieser Ansicht werden die Gesamtmodelle bewusst blasser dargestellt. Da keine Cα-Abweichungen oberhalb von ${threshold} Å gefunden wurden, ist das Modell in der betrachteten Gesamtfaltung sehr ähnlich zur Vergleichsstruktur. Kleine lokale Unterschiede können trotzdem vorhanden sein.`;
+    }
+  } else {
+    updatePredictionModelNote();
+  }
+}
+
 function highlightDifferences() {
   if (!lastDiffResidues.length || !loadedModels.prediction) return;
 
@@ -1046,6 +1107,18 @@ function highlightDifferences() {
     pred.addStyle({ hetflag: false, atom: "CA", resi: lastDiffResidues }, diffBackbone);
   } else {
     pred.setStyle({ hetflag: false, resi: lastDiffResidues }, diffRibbon);
+  }
+
+  if (currentView === "differences" && !isStatePairExample(currentExample) && loadedModels.prediction?.pdb) {
+    const caAtoms = parseAtoms(loadedModels.prediction.pdb)
+      .filter(a => a.line.trimStart().startsWith("ATOM") && a.atom === "CA" && lastDiffResidues.includes(a.resi));
+
+    // Bei sehr vielen Abweichungen nicht jeden Cα-Punkt markieren, sonst wird
+    // die Darstellung wieder unübersichtlich.
+    const step = caAtoms.length > 40 ? Math.ceil(caAtoms.length / 40) : 1;
+    caAtoms.forEach((a, index) => {
+      if (index % step === 0) addSphereMarker({ x: a.x, y: a.y, z: a.z }, 0.38, "#FF7043", 0.82);
+    });
   }
 }
 

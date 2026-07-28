@@ -1,31 +1,26 @@
-# KI-Strukturmodell-Labor v0.8.0
+# KI-Strukturmodell-Labor v0.8.1
 
-## Ziel von v0.8.0
+## Ziel von v0.8.1
 
-Diese Version konsolidiert das MBP-Beispiel, ohne neue technische Komplexität einzubauen.
+Diese Version wertet den allgemeinen Unterschiede-Modus für Trp-cage, Ubiquitin und Calmodulin didaktisch auf.
+
+MBP bleibt in dieser Version bewusst noch ohne eigene Domänenbewegungslogik. Diese folgt als separates, kleineres Arbeitspaket.
 
 ## Neu
 
-- Die Maltose-Beschriftung wird standardmäßig nicht mehr angezeigt.
-- Die Maltose bleibt deutlich sichtbar in Hellblau.
-- Die geschlossene Bindetasche bleibt orange.
-- Die offene Bindetasche ist hellviolett.
-- Die langen PDB-Diagnosemeldungen sind im normalen Betrieb ausgeblendet.
-- Die MBP-Statusmeldungen sind kürzer und stärker didaktisch formuliert.
+- In der Ansicht **Unterschiede** werden die Gesamtmodelle blasser dargestellt.
+- Abweichende Bereiche treten durch rot-orange Hervorhebung stärker hervor.
+- Zusätzlich werden im Unterschiede-Modus Cα-Punkte markiert, damit beim Klick auf „Unterschiede“ sichtbar etwas im Viewer passiert.
+- Das Textfeld unter dem Viewer erklärt jetzt klarer, was die hervorgehobenen Bereiche bedeuten.
+- Residuen werden im Status und Textfeld zu übersichtlichen Bereichen zusammengefasst.
 
-## Farben im MBP-Beispiel
+## Wichtig
 
-```text
-offene Struktur:             grün
-geschlossene Struktur:       orange/braun
-Maltose / Ligand:            hellblau
-Bindetasche geschlossen:     orange-gelb
-Bindetasche offen:           hellviolett
-```
+Die Markierung ist kein „richtig/falsch“-Urteil. Sie zeigt nur, wo Modell und Vergleichsstruktur nach der Überlagerung am deutlichsten auseinanderliegen.
 
 ## Update
 
-Für ein Update auf v0.8.0 ersetzen:
+Für ein Update auf v0.8.1 ersetzen:
 
 ```text
 index.html
