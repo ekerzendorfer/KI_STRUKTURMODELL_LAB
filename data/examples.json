@@ -1,8 +1,8 @@
 {
   "meta": {
     "title": "KI-Strukturmodell-Labor",
-    "version": "0.7.12",
-    "description": "Version 0.7.12 repariert den v0.7.11-Startfehler und ergänzt Maltose-Hellblau sowie Bindetasche in der offenen MBP-Einzelansicht.",
+    "version": "0.7.13",
+    "description": "Version 0.7.13 verbessert die Sichtbarkeit der offenen MBP-Bindetasche mit einem hellvioletten Kontrastton.",
     "model_note": "Die App lädt KI-Modelle nicht mehr über fragilen Remote-AFDB-Dateilink. Für Trp-cage und Ubiquitin sind lokale Pfade vorbereitet; die PDB-Dateien werden nach dem ColabFold-Lauf in structures/ abgelegt."
   },
   "examples": [
@@ -545,7 +545,7 @@
         "radius": 5.0,
         "showOnOpenState": true,
         "labelResidues": false,
-        "note": "Maltose hellblau; Bindetaschenreste geschlossen orange und offen türkis.",
+        "note": "Maltose hellblau; Bindetasche geschlossen orange und offen hellviolett.",
         "fallbackToAnyHetero": true,
         "separateModels": true,
         "useVisibleMarkers": true,
@@ -558,7 +558,7 @@
         "ligandSphereColor": "#81D4FA",
         "ligandLabelColor": "#0277BD",
         "closedPocketColor": "#F9A825",
-        "openPocketColor": "#26A69A",
+        "openPocketColor": "#B388FF",
         "referenceResidues": [
           12,
           14,

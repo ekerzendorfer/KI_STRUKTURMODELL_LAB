@@ -1,8 +1,8 @@
-/* KI-Strukturmodell-Labor v0.7.12
+/* KI-Strukturmodell-Labor v0.7.13
    Schlanke GitHub-Pages-Webapp mit 3Dmol.js und datengetriebener Struktur.
-   v0.7.12: Startfix + MBP-Farben/offene Bindetasche. */
+   v0.7.13: offene MBP-Bindetasche kontrastreicher. */
 
-const APP_VERSION = "0.7.12";
+const APP_VERSION = "0.7.13";
 let examplesData = null;
 let currentExample = null;
 let currentView = "overlay";

@@ -1,23 +1,14 @@
-# KI-Strukturmodell-Labor v0.7.12
+# KI-Strukturmodell-Labor v0.7.13
 
-## Neu in v0.7.12
+## Neu in v0.7.13
 
-Diese Version repariert den Startfehler aus v0.7.11:
-
-```text
-handleUpload is not defined
-```
-
-Zusätzlich enthält sie die geplanten MBP-Verbesserungen:
-
-- Maltose/Ligand in **hellblau** statt pink/magenta.
-- Bindetasche im geschlossenen Zustand weiterhin orange.
-- Bindetasche im offenen Zustand jetzt auch in der Einzelansicht **offen** markierbar.
-- Die PDB-Diagnose aus v0.7.10 bleibt erhalten.
+- Die **offene MBP-Bindetasche** wird jetzt in **hellviolett (`#B388FF`)** dargestellt.
+- Damit hebt sie sich klarer vom **grünen offenen Bandmodell** ab und bleibt auch in der Überlagerung gut sichtbar.
+- Sonst keine funktionalen Änderungen gegenüber v0.7.12.
 
 ## Update
 
-Für ein Update auf v0.7.12 ersetzen:
+Für ein Update auf v0.7.13 ersetzen:
 
 ```text
 index.html
